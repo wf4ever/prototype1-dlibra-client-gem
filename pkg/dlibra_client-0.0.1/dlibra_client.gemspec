@@ -11,8 +11,8 @@ Gem::Specification.new do |s|
   s.description = %q{Client library for the dLibra api of wf4ever Prototype 1 ROSRS}
   s.email = %q{soiland-reyes@cs.manchester.ac.uk}
   s.extra_rdoc_files = ["lib/dlibra_client.rb"]
-  s.files = ["Rakefile", "lib/dlibra_client.rb", "Manifest", "dlibra_client.gemspec"]
-  s.homepage = %q{http://github.com/wf4ever/prototype1-dlibra-client-gem;}
+  s.files = ["Manifest", "Rakefile", "dlibra_client.gemspec", "lib/dlibra_client.rb"]
+  s.homepage = %q{http://github.com/wf4ever/prototype1-dlibra-client-gem/}
   s.rdoc_options = ["--line-numbers", "--inline-source", "--title", "Dlibra_client"]
   s.require_paths = ["lib"]
   s.rubyforge_project = %q{dlibra_client}
