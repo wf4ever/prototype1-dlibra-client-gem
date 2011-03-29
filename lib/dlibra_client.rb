@@ -17,7 +17,8 @@ module DlibraClient
 
         def initialize(base_uri, workspace_id, password) 
             @base_uri = base_uri
-            @uri = URI.join(base_uri+"/", "workspaces/", workspace_id+"/")
+            @uri = URI.join(base_uri+"/", "workspaces/", workspace_id)
+            @uri_slash = URI.join(base_uri+"/", "workspaces/", workspace_id+"/")
             @username = workspace_id
             @password = password
         end
@@ -40,7 +41,7 @@ module DlibraClient
         end
 
         def create_research_object(name)
-            ro_uri = uri + "ROs/" + name
+            ro_uri = @uri_slash + "ROs/" + name
             Net::HTTP.start(ro_uri.host, ro_uri.port) {|http|
                 req = Net::HTTP::Put.new(ro_uri.path)
                 req.basic_auth @username, @password
@@ -52,10 +53,8 @@ module DlibraClient
             }
         end
 
-             
-
         def research_objects 
-            ros_uri = uri + "ROs" 
+            ros_uri = @uri_slash + "ROs" 
             Net::HTTP.start(ros_uri.host, ros_uri.port) {|http|
                 req = Net::HTTP::Get.new(ros_uri.path)
                 req.basic_auth @username, @password
@@ -70,9 +69,18 @@ module DlibraClient
                 end
                 return ros
             }
-            
         end
 
+        def delete!(admin_user, admin_password)
+            Net::HTTP.start(uri.host, uri.port) {|http|
+                req = Net::HTTP::Delete.new(uri.path)
+                req.basic_auth admin_user, admin_password
+                response = http.request(req)
+                if ! response.is_a? Net::HTTPNoContent
+                   raise WorkspaceDeletionError.new(uri, response)
+                end
+            }
+        end
 
 
     end
@@ -94,7 +102,6 @@ module DlibraClient
                    raise ResearchObjectDeletionError.new(uri, response)
                 end
             }
-            
         end
     end
 
