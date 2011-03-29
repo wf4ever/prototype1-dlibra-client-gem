@@ -1,4 +1,8 @@
 Manifest
+README
 Rakefile
 dlibra_client.gemspec
 lib/dlibra_client.rb
+spec/dlibra_client_spec.rb
+spec/spec.opts
+spec/spec_helper.rb

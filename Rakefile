@@ -1,6 +1,7 @@
 require 'rubygems'
 require 'rake'
 require 'echoe'
+require 'rspec/core/rake_task'
 
 
 Echoe.new('dlibra_client', '0.0.1') do |p|
@@ -11,4 +12,10 @@ Echoe.new('dlibra_client', '0.0.1') do |p|
   p.ignore_pattern = ["tmp/*", "script/*"]
   p.development_dependencies = []
 end
+
+
+
+RSpec::Core::RakeTask.new(:spec)
+
+task :default => :spec
 
