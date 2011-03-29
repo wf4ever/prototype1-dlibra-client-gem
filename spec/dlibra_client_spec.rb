@@ -30,6 +30,20 @@ describe DlibraClient do
                     workspace.research_objects.should == []
             end
         end
+        describe "#create_research_object" do
+            it "should make a new research object" do
+                ro1 = workspace.create_research_object("ro1")
+                ro1.uri.to_s.should == workspace.uri.to_s + "ROs/ro1"
+            end
+        end
+        describe "#research_objects" do
+            it "should now contain the new ro" do
+                ros = workspace.research_objects
+                ros.size.should == 1
+                ro = ros[0]
+                ro.uri.to_s.should == workspace.uri.to_s + "/ROs/ro1"
+            end
+        end
 
 
     end

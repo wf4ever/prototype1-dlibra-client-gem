@@ -11,8 +11,10 @@ module DlibraClient
     class Workspace
 
         attr_reader :uri
+        attr_reader :base_uri
 
         def initialize(base_uri, workspace_id, password) 
+            @base_uri = base_uri
             @uri = URI.join(base_uri+"/", "workspaces/", workspace_id+"/")
             @username = workspace_id
             @password = password
@@ -35,9 +37,33 @@ module DlibraClient
 
         end
 
+        def create_research_object(name)
+            ro_uri = uri + "ROs/" + name
+            Net::HTTP.start(ro_uri.host, ro_uri.port) {|http|
+                req = Net::HTTP::Put.new(ro_uri.path)
+                req.basic_auth @username, @password
+                response = http.request(req)
+                if ! response.is_a? Net::HTTPCreated 
+                   raise ResearchObjectCreationError.new(ro_uri, response)
+                end
+                return ResearchObject.new(self, ro_uri)
+            }
+        end
+
+             
+
         def research_objects() 
             return []
         end
+    end
+
+    class ResearchObject
+        attr_reader :workspace
+        attr_reader :uri
+        def initialize(workspace, uri)
+            @workspace = workspace
+            @uri = uri
+        end    
     end
 
     class DlibraError < StandardError
@@ -57,6 +83,8 @@ module DlibraClient
     class CreationError < DlibraHttpError
     end
     class WorkspaceCreationError < CreationError
+    end
+    class ResearchCreationError < CreationError
     end
 
 
