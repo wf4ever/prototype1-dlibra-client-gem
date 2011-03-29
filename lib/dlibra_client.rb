@@ -126,12 +126,10 @@ module DlibraClient
                 end
 
                 versions = []
-                if response.body
-                    graph = load_rdf_graph(response.body)
-                    ro_uri = RDF::URI(uri)
-                    graph.query([ro_uri, ORE.aggregates, nil]) do |s,p,version| 
-                        versions << Version.new(workspace, self, URI.parse(version))
-                    end
+                graph = load_rdf_graph(response.body)
+                ro_uri = RDF::URI(uri)
+                graph.query([ro_uri, ORE.aggregates, nil]) do |s,p,version| 
+                    versions << Version.new(workspace, self, URI.parse(version))
                 end
                 return versions
             }
@@ -185,12 +183,10 @@ module DlibraClient
                 end
 
                 resources = []
-                if response.body
-                    graph = load_rdf_graph(response.body)
-                    version_uri = RDF::URI(uri)
-                    graph.query([version_uri, ORE.aggregates, nil]) do |s,p,resource| 
-                        resources << Resource.new(workspace, ro, self, URI.parse(resource))
-                    end
+                graph = load_rdf_graph(response.body)
+                version_uri = RDF::URI(uri)
+                graph.query([version_uri, ORE.aggregates, nil]) do |s,p,resource| 
+                    resources << Resource.new(workspace, ro, self, URI.parse(resource))
                 end
                 return resources
             }
