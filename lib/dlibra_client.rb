@@ -12,6 +12,8 @@ module DlibraClient
 
         attr_reader :uri
         attr_reader :base_uri
+        attr_reader :username
+        attr_reader :password
 
         def initialize(base_uri, workspace_id, password) 
             @base_uri = base_uri
@@ -52,9 +54,27 @@ module DlibraClient
 
              
 
-        def research_objects() 
-            return []
+        def research_objects 
+            ros_uri = uri + "ROs" 
+            Net::HTTP.start(ros_uri.host, ros_uri.port) {|http|
+                req = Net::HTTP::Get.new(ros_uri.path)
+                req.basic_auth @username, @password
+                response = http.request(req)
+                if ! response.is_a? Net::HTTPOK
+                   raise ResearchObjectRetrievalError.new(ros_uri, response)
+                end
+
+                ros = []
+                for ro_uri in URI.extract(response.body) do
+                    ros << ResearchObject.new(self, URI.parse(ro_uri))
+                end
+                return ros
+            }
+            
         end
+
+
+
     end
 
     class ResearchObject
@@ -64,6 +84,18 @@ module DlibraClient
             @workspace = workspace
             @uri = uri
         end    
+
+        def delete!
+            Net::HTTP.start(uri.host, uri.port) {|http|
+                req = Net::HTTP::Delete.new(uri.path)
+                req.basic_auth @workspace.username, @workspace.password
+                response = http.request(req)
+                if ! response.is_a? Net::HTTPNoContent
+                   raise ResearchObjectDeletionError.new(uri, response)
+                end
+            }
+            
+        end
     end
 
     class DlibraError < StandardError
@@ -87,5 +119,18 @@ module DlibraClient
     class ResearchCreationError < CreationError
     end
 
+    class DeletionError < DlibraHttpError
+    end
+    class WorkspaceDeletionError < DeletionError
+    end
+    class ResearchDeletionError < DeletionError
+    end
+
+    class RetrievalError < DlibraHttpError
+    end
+    class WorkspaceRetrievalError < RetrievalError
+    end
+    class ResearchRetrievalError < RetrievalError
+    end
 
 end

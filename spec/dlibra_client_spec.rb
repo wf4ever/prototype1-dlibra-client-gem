@@ -4,7 +4,7 @@ require 'uuidtools'
 require 'base64'
 
 
-describe DlibraClient do
+describe DlibraClient::Workspace do
     
     describe "#initialize" do
         it "should be constructed with a valid URI, workspace ID and password" do
@@ -30,6 +30,7 @@ describe DlibraClient do
                     workspace.research_objects.should == []
             end
         end
+        ro1 = 
         describe "#create_research_object" do
             it "should make a new research object" do
                 ro1 = workspace.create_research_object("ro1")
@@ -41,8 +42,17 @@ describe DlibraClient do
                 ros = workspace.research_objects
                 ros.size.should == 1
                 ro = ros[0]
-                ro.uri.to_s.should == workspace.uri.to_s + "/ROs/ro1"
+                ro.uri.to_s.should == workspace.uri.to_s + "ROs/ro1"
             end
+        end
+        describe DlibraClient::ResearchObject do
+           describe "#delete" do
+            it "should delete the RO" do
+                workspace.research_objects.size.should == 1
+                ro1.delete!
+                workspace.research_objects.size.should == 0        
+            end
+           end 
         end
 
 
