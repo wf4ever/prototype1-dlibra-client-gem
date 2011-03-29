@@ -5,8 +5,18 @@
 require 'rubygems'
 require 'uri'
 require 'net/https'
+require 'rdf'
+require 'rdf/rdfxml'
+
 
 module DlibraClient
+    APPLICATION_RDF_XML="application/rdf+xml"
+    DC = RDF::Vocabulary.new("http://purl.org/dc/elements/1.1/")
+    ORE = RDF::Vocabulary.new("http://www.openarchives.org/ore/terms/")    
+    DCTERMS = RDF::Vocabulary.new("http://purl.org/dc/terms/")
+    OXDS = RDF::Vocabulary.new("http://vocab.ox.ac.uk/dataset/schema#")
+
+
     # A connection to a Dlibra SRS Workspace
     class Workspace
 
@@ -93,10 +103,55 @@ module DlibraClient
             @uri = uri
         end    
 
+        def versions
+            Net::HTTP.start(uri.host, uri.port) {|http|
+                req = Net::HTTP::Get.new(uri.path)
+                req.basic_auth workspace.username, workspace.password
+                req.add_field "Accept", APPLICATION_RDF_XML
+                response = http.request(req)
+                if ! response.is_a? Net::HTTPOK
+                   raise ResearchObjectRetrievalError.new(uri, response)
+                end
+
+                versions = []
+                if response.body
+                    graph = load_rdf_graph(response.body)
+                    ro_uri = RDF::URI(uri)
+                    graph.query([ro_uri, ORE.aggregates, nil]) do |s,p,version| 
+                        versions << Version.new(workspace, self, URI.parse(version))
+                    end
+                end
+                return versions
+            }
+        end
+
+        def load_rdf_graph(body)
+            graph = RDF::Graph.new()
+            RDF::Reader.for(:rdfxml).new(body) do |reader|
+                reader.each_statement do |statement|
+                    graph << statement
+                end
+            end
+            return graph
+        end
+
+        def create_version(name)
+            version_uri = URI.parse(@uri.to_s + "/") + name
+            Net::HTTP.start(version_uri.host, version_uri.port) {|http|
+                req = Net::HTTP::Post.new(version_uri.path)
+                req.basic_auth workspace.username, workspace.password
+                response = http.request(req)
+                if ! response.is_a? Net::HTTPCreated 
+                   raise VersionCreationError.new(version_uri, response)
+                end
+                return Version.new(workspace, self, version_uri)
+            }
+        end
+
         def delete!
             Net::HTTP.start(uri.host, uri.port) {|http|
                 req = Net::HTTP::Delete.new(uri.path)
-                req.basic_auth @workspace.username, @workspace.password
+                req.basic_auth workspace.username, workspace.password
                 response = http.request(req)
                 if ! response.is_a? Net::HTTPNoContent
                    raise ResearchObjectDeletionError.new(uri, response)
@@ -104,6 +159,28 @@ module DlibraClient
             }
         end
     end
+
+    class Version
+        attr_reader :workspace
+        attr_reader :ro
+        attr_reader :uri
+        def initialize(workspace, ro, uri)
+            @workspace = workspace
+            @ro = ro
+            @uri = uri
+        end    
+        def delete!
+            Net::HTTP.start(uri.host, uri.port) {|http|
+                req = Net::HTTP::Delete.new(uri.path)
+                req.basic_auth workspace.username, workspace.password
+                response = http.request(req)
+                if ! response.is_a? Net::HTTPNoContent
+                   raise VersionDeletionError.new(uri, response)
+                end
+            }
+        end
+    end
+
 
     class DlibraError < StandardError
     end
@@ -123,21 +200,27 @@ module DlibraClient
     end
     class WorkspaceCreationError < CreationError
     end
-    class ResearchCreationError < CreationError
+    class ResearchObjectCreationError < CreationError
+    end
+    class VersionCreationError < CreationError
     end
 
     class DeletionError < DlibraHttpError
     end
     class WorkspaceDeletionError < DeletionError
     end
-    class ResearchDeletionError < DeletionError
+    class ResearchObjectDeletionError < DeletionError
+    end
+    class VersionDeletionError < DeletionError
     end
 
     class RetrievalError < DlibraHttpError
     end
     class WorkspaceRetrievalError < RetrievalError
     end
-    class ResearchRetrievalError < RetrievalError
+    class ResearchObjectRetrievalError < RetrievalError
+    end
+    class VersionRetrievalError < RetrievalError
     end
 
 end

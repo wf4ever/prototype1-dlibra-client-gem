@@ -27,7 +27,7 @@ describe DlibraClient::Workspace do
         end
         describe "#research_objects" do
             it "should be initially be an empty list" do
-                    workspace.research_objects.should == []
+                workspace.research_objects.should == []
             end
         end
         ro1 = 
@@ -46,6 +46,35 @@ describe DlibraClient::Workspace do
             end
         end
         describe DlibraClient::ResearchObject do
+            describe "#versions" do
+                it "should initially be an empty list" do
+                    ro1.versions.should == []
+                end
+            end
+            describe "#add_version" do
+                it "should create a new version" do
+                    version = ro1.create_version("ver1")
+                    version.uri.to_s.should == ro1.uri.to_s + "/ver1"
+                end
+            end
+            ver1 = 
+            describe "#versions" do
+                it "should now contain the new version" do
+                    ro1.versions.size.should == 1 
+                    ver1 = ro1.versions[0]
+                    ver1.uri.to_s.should == ro1.uri.to_s + "/ver1"
+                end
+            end
+            describe DlibraClient::Version do
+                describe "#delete" do
+                    it "should delete the version" do
+                        ro1.versions.size.should == 1
+                        ver1.delete!
+                        ro1.versions.size.should == 0
+                    end    
+                end
+            end
+
             describe "#delete" do
                 it "should delete the RO" do
                     workspace.research_objects.size.should == 1
@@ -53,6 +82,7 @@ describe DlibraClient::Workspace do
                     workspace.research_objects.size.should == 0        
                 end    
             end 
+            
         end
         describe "#delete" do
             it "should delete the workspace" do
