@@ -86,6 +86,15 @@ describe DlibraClient::Workspace do
                         f1.uri.to_s.should == ver1.uri.to_s + "/resource.txt"
                     end
                 end
+                describe DlibraClient::Resource do
+                    describe "#delete" do
+                        it "should delete the resource" do
+                            ver1.resources.size.should == 1 
+                            f1.delete!
+                            ver1.resources.size.should == 0 
+                        end    
+                    end
+                end
                 describe "#delete" do
                     it "should delete the version" do
                         ro1.versions.size.should == 1
