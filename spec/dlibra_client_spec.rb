@@ -66,6 +66,26 @@ describe DlibraClient::Workspace do
                 end
             end
             describe DlibraClient::Version do
+                describe "#resources" do
+                    it "should initially be an empty list" do
+                        ver1.resources.should == []
+                    end
+                end
+                f1 =
+                describe "#upload_resource" do
+                    it "should upload the resource" do
+                        f1 = ver1.upload_resource("resource.txt", "text/plain",
+                            "Hello world!\nA simple resource.\n")
+                        f1.uri.to_s.should == ver1.uri.to_s + "/resource.txt"
+                    end
+                end
+                describe "#resources" do
+                    it "should now contain the new resource" do
+                        ver1.resources.size.should == 1 
+                        f1 = ver1.resources[0]
+                        f1.uri.to_s.should == ver1.uri.to_s + "/resource.txt"
+                    end
+                end
                 describe "#delete" do
                     it "should delete the version" do
                         ro1.versions.size.should == 1

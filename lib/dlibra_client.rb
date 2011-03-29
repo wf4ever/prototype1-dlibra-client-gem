@@ -16,9 +16,21 @@ module DlibraClient
     DCTERMS = RDF::Vocabulary.new("http://purl.org/dc/terms/")
     OXDS = RDF::Vocabulary.new("http://vocab.ox.ac.uk/dataset/schema#")
 
+    class Common
+
+        def load_rdf_graph(body)
+            graph = RDF::Graph.new()
+            RDF::Reader.for(:rdfxml).new(body) do |reader|
+                reader.each_statement do |statement|
+                    graph << statement
+                end
+            end
+            return graph
+        end
+    end
 
     # A connection to a Dlibra SRS Workspace
-    class Workspace
+    class Workspace < Common
 
         attr_reader :uri
         attr_reader :base_uri
@@ -95,7 +107,7 @@ module DlibraClient
 
     end
 
-    class ResearchObject
+    class ResearchObject < Common
         attr_reader :workspace
         attr_reader :uri
         def initialize(workspace, uri)
@@ -125,19 +137,11 @@ module DlibraClient
             }
         end
 
-        def load_rdf_graph(body)
-            graph = RDF::Graph.new()
-            RDF::Reader.for(:rdfxml).new(body) do |reader|
-                reader.each_statement do |statement|
-                    graph << statement
-                end
-            end
-            return graph
-        end
 
         def create_version(name)
             version_uri = URI.parse(@uri.to_s + "/") + name
             Net::HTTP.start(version_uri.host, version_uri.port) {|http|
+                # FIXME: Why is this POST?
                 req = Net::HTTP::Post.new(version_uri.path)
                 req.basic_auth workspace.username, workspace.password
                 response = http.request(req)
@@ -160,7 +164,7 @@ module DlibraClient
         end
     end
 
-    class Version
+    class Version < Common
         attr_reader :workspace
         attr_reader :ro
         attr_reader :uri
@@ -169,6 +173,46 @@ module DlibraClient
             @ro = ro
             @uri = uri
         end    
+
+        def resources
+            Net::HTTP.start(uri.host, uri.port) {|http|
+                req = Net::HTTP::Get.new(uri.path)
+                req.basic_auth workspace.username, workspace.password
+                req.add_field "Accept", APPLICATION_RDF_XML
+                response = http.request(req)
+                if ! response.is_a? Net::HTTPOK
+                   raise ResearchObjectRetrievalError.new(uri, response)
+                end
+
+                resources = []
+                if response.body
+                    graph = load_rdf_graph(response.body)
+                    version_uri = RDF::URI(uri)
+                    graph.query([version_uri, ORE.aggregates, nil]) do |s,p,resource| 
+                        resources << Resource.new(workspace, ro, self, URI.parse(resource))
+                    end
+                end
+                return resources
+            }
+        end 
+
+        def upload_resource(ro_path, content_type, data)
+            resource_uri = URI.parse(uri.to_s + "/") + ro_path
+            Net::HTTP.start(resource_uri.host, resource_uri.port) {|http|
+                # FIXME: Why is this POST?
+                req = Net::HTTP::Post.new(resource_uri.path)
+                req.basic_auth workspace.username, workspace.password
+                req.content_type = content_type                
+                req.body = data
+                response = http.request(req)
+                # FIXME: Why doesn't the server return HTTPNoContent ? 
+                if ! response.is_a? Net::HTTPSuccess
+                   raise ResourceUploadError.new(resource_uri, response)
+                end
+                return Resource.new(workspace, ro, self, resource_uri)
+            }
+        end
+
         def delete!
             Net::HTTP.start(uri.host, uri.port) {|http|
                 req = Net::HTTP::Delete.new(uri.path)
@@ -176,6 +220,29 @@ module DlibraClient
                 response = http.request(req)
                 if ! response.is_a? Net::HTTPNoContent
                    raise VersionDeletionError.new(uri, response)
+                end
+            }
+        end
+    end
+
+    class Resource < Common
+        attr_reader :workspace
+        attr_reader :ro
+        attr_reader :uri
+        attr_reader :version
+        def initialize(workspace, ro, version, uri)
+            @workspace = workspace
+            @ro = ro
+            @version = version
+            @uri = uri
+        end    
+        def delete!
+            Net::HTTP.start(uri.host, uri.port) {|http|
+                req = Net::HTTP::Delete.new(uri.path)
+                req.basic_auth workspace.username, workspace.password
+                response = http.request(req)
+                if ! response.is_a? Net::HTTPNoContent
+                   raise ResourceDeletionError.new(uri, response)
                 end
             }
         end
@@ -196,6 +263,7 @@ module DlibraClient
         attr :response
     end
 
+
     class CreationError < DlibraHttpError
     end
     class WorkspaceCreationError < CreationError
@@ -203,6 +271,8 @@ module DlibraClient
     class ResearchObjectCreationError < CreationError
     end
     class VersionCreationError < CreationError
+    end
+    class ResourceUploadError < CreationError
     end
 
     class DeletionError < DlibraHttpError
@@ -213,6 +283,8 @@ module DlibraClient
     end
     class VersionDeletionError < DeletionError
     end
+    class ResourceDeletionError < DeletionError
+    end
 
     class RetrievalError < DlibraHttpError
     end
@@ -221,6 +293,8 @@ module DlibraClient
     class ResearchObjectRetrievalError < RetrievalError
     end
     class VersionRetrievalError < RetrievalError
+    end
+    class ResourceRetrievalError < RetrievalError
     end
 
 end
