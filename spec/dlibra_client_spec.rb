@@ -23,7 +23,7 @@ describe DlibraClient::Workspace do
         it "should detect conflicting names" do
             lambda {
                 DlibraClient::Workspace.create(BASE, workspace_id, "uncle", ADMIN, ADMIN_PW)
-            }.should raise_error(DlibraClient::WorkspaceCreationError)
+            }.should raise_error(DlibraClient::CreationError)
         end
         describe "#research_objects" do
             it "should be initially be an empty list" do

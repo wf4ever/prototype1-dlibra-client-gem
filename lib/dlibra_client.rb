@@ -29,8 +29,21 @@ module DlibraClient
         end
     end
 
+	class Abstract < Common
+	      def delete!
+            Net::HTTP.start(uri.host, uri.port) {|http|
+                req = Net::HTTP::Delete.new(uri.path)
+                req.basic_auth workspace.username, workspace.password
+                response = http.request(req)
+                if ! response.is_a? Net::HTTPNoContent
+                   raise DeletionError.new(uri, response)
+                end
+            }
+        end
+	end
+
     # A connection to a Dlibra SRS Workspace
-    class Workspace < Common
+    class Workspace < Abstract
 
         attr_reader :uri
         attr_reader :base_uri
@@ -55,7 +68,7 @@ module DlibraClient
 
                 response = http.request(req)
                 if ! response.is_a? Net::HTTPCreated 
-                   raise WorkspaceCreationError.new(uri, response)
+                   raise CreationError.new(uri, response)
                 end
                 return Workspace.new(base_uri, workspace_id, workspace_password)
             }
@@ -69,7 +82,7 @@ module DlibraClient
                 req.basic_auth @username, @password
                 response = http.request(req)
                 if ! response.is_a? Net::HTTPCreated 
-                   raise ResearchObjectCreationError.new(ro_uri, response)
+                   raise CreationError.new(ro_uri, response)
                 end
                 return ResearchObject.new(self, ro_uri)
             }
@@ -82,7 +95,7 @@ module DlibraClient
                 req.basic_auth @username, @password
                 response = http.request(req)
                 if ! response.is_a? Net::HTTPOK
-                   raise ResearchObjectRetrievalError.new(ros_uri, response)
+                   raise RetrievalError.new(ros_uri, response)
                 end
 
                 ros = []
@@ -99,7 +112,7 @@ module DlibraClient
                 req.basic_auth admin_user, admin_password
                 response = http.request(req)
                 if ! response.is_a? Net::HTTPNoContent
-                   raise WorkspaceDeletionError.new(uri, response)
+                   raise DeletionError.new(uri, response)
                 end
             }
         end
@@ -107,7 +120,7 @@ module DlibraClient
 
     end
 
-    class ResearchObject < Common
+    class ResearchObject < Abstract
         attr_reader :workspace
         attr_reader :uri
         def initialize(workspace, uri)
@@ -122,7 +135,7 @@ module DlibraClient
                 req.add_field "Accept", APPLICATION_RDF_XML
                 response = http.request(req)
                 if ! response.is_a? Net::HTTPOK
-                   raise ResearchObjectRetrievalError.new(uri, response)
+                   raise RetrievalError.new(uri, response)
                 end
 
                 versions = []
@@ -144,25 +157,16 @@ module DlibraClient
                 req.basic_auth workspace.username, workspace.password
                 response = http.request(req)
                 if ! response.is_a? Net::HTTPCreated 
-                   raise VersionCreationError.new(version_uri, response)
+                   raise CreationError.new(version_uri, response)
                 end
                 return Version.new(workspace, self, version_uri)
             }
         end
 
-        def delete!
-            Net::HTTP.start(uri.host, uri.port) {|http|
-                req = Net::HTTP::Delete.new(uri.path)
-                req.basic_auth workspace.username, workspace.password
-                response = http.request(req)
-                if ! response.is_a? Net::HTTPNoContent
-                   raise ResearchObjectDeletionError.new(uri, response)
-                end
-            }
-        end
+  
     end
 
-    class Version < Common
+    class Version < Abstract
         attr_reader :workspace
         attr_reader :ro
         attr_reader :uri
@@ -179,7 +183,7 @@ module DlibraClient
                 req.add_field "Accept", APPLICATION_RDF_XML
                 response = http.request(req)
                 if ! response.is_a? Net::HTTPOK
-                   raise ResearchObjectRetrievalError.new(uri, response)
+                   raise RetrievalError.new(uri, response)
                 end
 
                 resources = []
@@ -203,25 +207,16 @@ module DlibraClient
                 response = http.request(req)
                 # FIXME: Why doesn't the server return HTTPNoContent ? 
                 if ! response.is_a? Net::HTTPSuccess
-                   raise ResourceUploadError.new(resource_uri, response)
+                   raise CreationError.new(resource_uri, response)
                 end
                 return Resource.new(workspace, ro, self, resource_uri)
             }
         end
 
-        def delete!
-            Net::HTTP.start(uri.host, uri.port) {|http|
-                req = Net::HTTP::Delete.new(uri.path)
-                req.basic_auth workspace.username, workspace.password
-                response = http.request(req)
-                if ! response.is_a? Net::HTTPNoContent
-                   raise VersionDeletionError.new(uri, response)
-                end
-            }
-        end
+       
     end
 
-    class Resource < Common
+    class Resource < Abstract
         attr_reader :workspace
         attr_reader :ro
         attr_reader :uri
@@ -232,16 +227,7 @@ module DlibraClient
             @version = version
             @uri = uri
         end    
-        def delete!
-            Net::HTTP.start(uri.host, uri.port) {|http|
-                req = Net::HTTP::Delete.new(uri.path)
-                req.basic_auth workspace.username, workspace.password
-                response = http.request(req)
-                if ! response.is_a? Net::HTTPNoContent
-                   raise ResourceDeletionError.new(uri, response)
-                end
-            }
-        end
+       
     end
 
 
@@ -262,35 +248,11 @@ module DlibraClient
 
     class CreationError < DlibraHttpError
     end
-    class WorkspaceCreationError < CreationError
-    end
-    class ResearchObjectCreationError < CreationError
-    end
-    class VersionCreationError < CreationError
-    end
-    class ResourceUploadError < CreationError
-    end
 
     class DeletionError < DlibraHttpError
-    end
-    class WorkspaceDeletionError < DeletionError
-    end
-    class ResearchObjectDeletionError < DeletionError
-    end
-    class VersionDeletionError < DeletionError
-    end
-    class ResourceDeletionError < DeletionError
     end
 
     class RetrievalError < DlibraHttpError
     end
-    class WorkspaceRetrievalError < RetrievalError
-    end
-    class ResearchObjectRetrievalError < RetrievalError
-    end
-    class VersionRetrievalError < RetrievalError
-    end
-    class ResourceRetrievalError < RetrievalError
-    end
-
+   
 end
