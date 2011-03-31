@@ -1,0 +1,24 @@
+GEM
+  remote: http://rubygems.org/
+  specs:
+    addressable (2.2.4)
+    diff-lcs (1.1.2)
+    rdf (0.3.1)
+      addressable (>= 2.2)
+    rspec (2.5.0)
+      rspec-core (~> 2.5.0)
+      rspec-expectations (~> 2.5.0)
+      rspec-mocks (~> 2.5.0)
+    rspec-core (2.5.1)
+    rspec-expectations (2.5.0)
+      diff-lcs (~> 1.1.2)
+    rspec-mocks (2.5.0)
+    uuidtools (2.1.2)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  rdf (~> 0.3)
+  rspec (~> 2.5)
+  uuidtools (~> 2.1)
