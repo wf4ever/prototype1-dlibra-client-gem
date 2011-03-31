@@ -1,3 +1,9 @@
+PATH
+  remote: .
+  specs:
+    dlibra_client (0.0.1)
+      rdf (~> 0.3)
+
 GEM
   remote: http://rubygems.org/
   specs:
@@ -19,6 +25,6 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  rdf (~> 0.3)
+  dlibra_client!
   rspec (~> 2.5)
   uuidtools (~> 2.1)
