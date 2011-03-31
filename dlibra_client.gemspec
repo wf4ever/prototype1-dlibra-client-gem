@@ -19,9 +19,12 @@ Gem::Specification.new do |s|
   s.test_files = Dir.glob('spec/**/*')
 
   s.add_runtime_dependency 'rdf', '~> 0.3'
-  
+  s.add_runtime_dependency 'rdf-rdfxml', '~> 0.3'
+    
   s.add_development_dependency 'rspec', '~> 2.5'
   s.add_development_dependency 'uuidtools', '~> 2.1'
+  s.add_development_dependency 'echoe', '~> 4.5'
+  s.add_development_dependency 'fuubar', '~> 0.0.4'
   
   if s.respond_to? :specification_version then
     s.specification_version = 3
