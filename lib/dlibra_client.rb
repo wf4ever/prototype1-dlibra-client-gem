@@ -212,6 +212,25 @@ module DlibraClient
                 return Resource.new(workspace, ro, self, resource_uri)
             }
         end
+        
+        def manifest
+            return load_rdf_graph(manifest_rdf)      	
+        end
+        
+        def manifest_rdf
+            resource_uri = URI.parse(uri.to_s + "/manifest.rdf")            
+            Net::HTTP.start(resource_uri.host, resource_uri.port) {|http|
+                # FIXME: Why is this POST?
+                req = Net::HTTP::Get.new(resource_uri.path)
+                req.basic_auth workspace.username, workspace.password
+                req.add_field "Accept", APPLICATION_RDF_XML
+                response = http.request(req)                 
+                if ! response.is_a? Net::HTTPOK
+                   raise RetrievalError.new(resource_uri, response)
+                end                
+                return response.body
+            }                    	
+        end
 
        
     end

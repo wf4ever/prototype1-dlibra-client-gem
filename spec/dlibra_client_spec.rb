@@ -86,6 +86,27 @@ describe DlibraClient::Workspace do
                         f1.uri.to_s.should == ver1.uri.to_s + "/resource.txt"
                     end
                 end
+                
+                
+                describe "#manifest_rdf" do
+                    it "should be RDF/XML" do                        
+                        ver1.manifest_rdf.should include("rdf:Description")
+                    end
+					it "should include resource.txt" do						
+						ver1.manifest_rdf.should include("resource.txt")
+					end
+                end
+                describe "#manifest" do
+                    it "should be an RDF::Graph" do
+                        manifest = ver1.manifest
+                        aggregates = []
+                        manifest.query([nil, DlibraClient::ORE.aggregates, nil]) do |s,p,resource|
+                        	aggregates << resource.to_s                    			
+                		end                		
+                		aggregates.should include(f1.uri.to_s) 
+                    end
+                end
+                
                 describe DlibraClient::Resource do
                     describe "#delete" do
                         it "should delete the resource" do
