@@ -14,6 +14,7 @@ require 'rdf/rdfxml'
 module DlibraClient
     APPLICATION_RDF_XML="application/rdf+xml"
     APPLICATION_ZIP="application/zip"
+    TEXT_PLAIN="text/plain"
     DC = RDF::Vocabulary.new("http://purl.org/dc/elements/1.1/")
     ORE = RDF::Vocabulary.new("http://www.openarchives.org/ore/terms/")    
     DCTERMS = RDF::Vocabulary.new("http://purl.org/dc/terms/")
@@ -264,6 +265,21 @@ module DlibraClient
 	            end
 	        end
         end
+        
+        def clone(name)
+        	version_uri = URI.parse(@ro.uri.to_s + "/") + name
+            Net::HTTP.start(version_uri.host, version_uri.port) do |http|
+                req = Net::HTTP::Post.new(version_uri.path)
+                req.basic_auth workspace.username, workspace.password
+                req.content_type = TEXT_PLAIN
+                req.body = self.uri.to_s
+                response = http.request(req)
+                if ! response.is_a? Net::HTTPCreated 
+                   raise CreationError.new(version_uri, response)
+                end
+                return Version.new(workspace, self, version_uri)
+            end
+        end
                 
     end
     
@@ -296,6 +312,20 @@ module DlibraClient
 	                end
 	            end
 	        end
+        end
+        
+        def content=(value, type=content_type)
+        	resource_uri = uri            
+             Net::HTTP.start(resource_uri.host, resource_uri.port) do |http|
+                req = Net::HTTP::Post.new(resource_uri.path)
+                req.basic_auth workspace.username, workspace.password
+                req.content_type = type                
+                req.body = value
+                response = http.request(req)
+                if ! response.is_a? Net::HTTPSuccess
+                   raise CreationError.new(resource_uri, response)
+                end
+            end
         end
         
         def metadata

@@ -129,6 +129,18 @@ describe DlibraClient::Workspace do
 						end
 					end
 				end
+				
+				describe "#clone" do
+					ver2 =
+					it "should create a second version" do
+						ver2 = ver1.clone("ver2")
+						ver2.uri.to_s.should == ro1.uri.to_s + "/ver2"
+					end
+					it "should contain a copy of the old resource" do
+						ver2.resources.size.should == 1
+						ver2.resources[0].uri.to_s.should == ver2.uri.to_s + "/resource.txt"
+					end
+				end
 
 				describe DlibraClient::Resource do
 					describe "#content" do
@@ -148,7 +160,7 @@ describe DlibraClient::Workspace do
 							end							
 						end
 					end
-					
+										
 					describe "#metadata" do
 						metadata=
 						it "should retrieve the metadata graph" do
@@ -212,7 +224,18 @@ describe DlibraClient::Workspace do
 						end
 					end
 					
-					describe "#delete" do
+				describe "#content=" do
+					it "should replace the file content" do
+						before = f1.modified
+						f1.content = "Different content"
+						f1.content.should == "Different content"
+						f1.size.should == 17
+						f1.modified.should > before
+					end
+				end
+
+					
+				describe "#delete" do
 						it "should delete the resource" do
 							ver1.resources.size.should == 1
 							f1.delete!
@@ -243,8 +266,10 @@ describe DlibraClient::Workspace do
 
 				describe "#delete" do
 					it "should delete the version" do
-						ro1.versions.size.should == 1
+						ro1.versions.size.should == 2
 						ver1.delete!
+						ro1.versions.size.should == 1
+						ver2.delete!
 						ro1.versions.size.should == 0
 					end
 				end
