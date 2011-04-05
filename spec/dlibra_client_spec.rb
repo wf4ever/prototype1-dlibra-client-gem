@@ -131,6 +131,23 @@ describe DlibraClient::Workspace do
 				end
 
 				describe DlibraClient::Resource do
+					describe "#content" do
+						it "should return the resource content" do
+							f1.content.should == "Hello world!\nA simple resource.\n"
+						end
+						it "should be downloadable to a file" do
+							file = Tempfile.new("dlibra-test")
+							begin
+								f1.content(file)
+								file.seek(0)
+								file.read().should == "Hello world!\nA simple resource.\n"
+								
+							ensure
+								file.unlink
+								file.close
+							end							
+						end
+					end
 					describe "#delete" do
 						it "should delete the resource" do
 							ver1.resources.size.should == 1

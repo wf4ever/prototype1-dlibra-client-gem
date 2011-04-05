@@ -251,7 +251,7 @@ module DlibraClient
                 req.add_field "Accept", APPLICATION_ZIP
                 http.request(req) do |response|                
 	                if ! response.is_a? Net::HTTPOK
-	                   raise RetrievalError.new(resource_uri, response)
+	                   raise RetrievalError.new(uri, response)
 	                end
 	                if (! file)
 		                 return response.body                	
@@ -275,7 +275,26 @@ module DlibraClient
             @ro = ro
             @version = version
             @uri = uri
-        end    
+        end
+        
+        def content(file=nil)
+            resource_uri = URI.parse(uri.to_s + "?content=true")
+        	Net::HTTP.start(resource_uri.host, resource_uri.port) do |http|
+                req = Net::HTTP::Get.new(resource_uri.path + "?content=true")
+                req.basic_auth workspace.username, workspace.password
+                http.request(req) do |response|                
+	                if ! response.is_a? Net::HTTPOK
+	                   raise RetrievalError.new(resource_uri, response)
+	                end
+	                if (! file)
+		                 return response.body                	
+	                end
+	                response.read_body do |segment|
+	                	file.write(segment)
+	                end
+	            end
+	        end
+        end
        
     end
 
