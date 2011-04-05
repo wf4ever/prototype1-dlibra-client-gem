@@ -1,1 +1,9 @@
 Client library for the dLibra api of wf4ever Prototype 1 ROSRS
+
+
+To build:
+    # gem install bundler
+    bundle    
+    rake
+    gem build dlibra_client.gemspec
+    gem install dlibra_client-0.0.1.gem
