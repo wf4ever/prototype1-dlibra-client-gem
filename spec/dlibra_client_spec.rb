@@ -51,6 +51,16 @@ describe DlibraClient::Workspace do
 					ro1.versions.should == []
 				end
 			end
+			describe "#metadata_rdf" do
+				it "should contain some metadata" do
+					ro1.metadata_rdf.should include("Aggregation")
+				end
+			end
+			describe "#metadata" do
+				it "should be of aggregation type" do
+					ro1.metadata.first_object([ro1.uri, RDF.type]).should == DlibraClient::ORE.Aggregation
+				end
+			end
 			describe "#add_version" do
 				it "should create a new version" do
 					version = ro1.create_version("ver1")
@@ -268,7 +278,7 @@ describe DlibraClient::Workspace do
 					it "should delete the version" do
 						ro1.versions.size.should == 2
 						ver1.delete!
-						ro1.versions.size.should == 1
+						ver2 = ro1.versions[0]
 						ver2.delete!
 						ro1.versions.size.should == 0
 					end

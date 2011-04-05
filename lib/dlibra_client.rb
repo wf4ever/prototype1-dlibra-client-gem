@@ -48,6 +48,51 @@ module DlibraClient
         	return RDF::URI.new(@uri)
         end
 	end
+	
+	class MetaData < Abstract
+		def metadata
+            return load_rdf_graph(metadata_rdf)      	
+        end
+        
+#        def metadata=(rdf_graph)        	
+#			rdf_xml = RDF::RDFXML::Writer.buffer do |writer|
+#			  rdf_graph.each_statement do |statement|
+#			    writer << statement
+#			  end
+#			end
+#        	self.metadata_rdf=rdf_xml
+#        end
+        
+        def metadata_rdf
+            resource_uri = uri            
+            Net::HTTP.start(resource_uri.host, resource_uri.port) do |http|
+                req = Net::HTTP::Get.new(resource_uri.path)
+                req.basic_auth workspace.username, workspace.password
+                req.add_field "Accept", APPLICATION_RDF_XML
+                response = http.request(req)                 
+                if ! response.is_a? Net::HTTPOK
+                   raise RetrievalError.new(resource_uri, response)
+                end                
+                return response.body
+          	end
+        end
+        
+        
+#        def metadata_rdf=(rdf_xml)
+#            resource_uri = uri            
+#            Net::HTTP.start(resource_uri.host, resource_uri.port) do |http|
+#                req = Net::HTTP::Post.new(resource_uri.path)
+#                req.basic_auth workspace.username, workspace.password
+#                req.content_type = APPLICATION_RDF_XML                
+#                req.body = rdf_xml
+#                response = http.request(req)
+#                if ! response.is_a? Net::HTTPSuccess
+#                   raise CreationError.new(resource_uri, response)
+#                end
+#            end
+#    	end
+
+	end
 
     # A connection to a Dlibra SRS Workspace
     class Workspace < Abstract
@@ -126,7 +171,7 @@ module DlibraClient
 
     end
 
-    class ResearchObject < Abstract
+    class ResearchObject < MetaData
         attr_reader :workspace
         def initialize(workspace, uri)
             @workspace = workspace
@@ -143,9 +188,8 @@ module DlibraClient
                    raise RetrievalError.new(uri, response)
                 end
 
-                versions = []
-                graph = load_rdf_graph(response.body)
-                graph.query([uri, ORE.aggregates, nil]) do |s,p,version| 
+                versions = []               
+                metadata.query([uri, ORE.aggregates, nil]) do |s,p,version| 
                     versions << Version.new(workspace, self, URI.parse(version))
                 end
                 return versions
@@ -284,7 +328,7 @@ module DlibraClient
     end
     
 
-    class Resource < Abstract
+    class Resource < MetaData
         attr_reader :workspace
         attr_reader :ro
         attr_reader :version
@@ -328,47 +372,6 @@ module DlibraClient
             end
         end
         
-        def metadata
-            return load_rdf_graph(metadata_rdf)      	
-        end
-        
-#        def metadata=(rdf_graph)        	
-#			rdf_xml = RDF::RDFXML::Writer.buffer do |writer|
-#			  rdf_graph.each_statement do |statement|
-#			    writer << statement
-#			  end
-#			end
-#        	self.metadata_rdf=rdf_xml
-#        end
-        
-        def metadata_rdf
-            resource_uri = uri            
-            Net::HTTP.start(resource_uri.host, resource_uri.port) do |http|
-                req = Net::HTTP::Get.new(resource_uri.path)
-                req.basic_auth workspace.username, workspace.password
-                req.add_field "Accept", APPLICATION_RDF_XML
-                response = http.request(req)                 
-                if ! response.is_a? Net::HTTPOK
-                   raise RetrievalError.new(resource_uri, response)
-                end                
-                return response.body
-          	end
-        end
-        
-        
-#        def metadata_rdf=(rdf_xml)
-#            resource_uri = uri            
-#            Net::HTTP.start(resource_uri.host, resource_uri.port) do |http|
-#                req = Net::HTTP::Post.new(resource_uri.path)
-#                req.basic_auth workspace.username, workspace.password
-#                req.content_type = APPLICATION_RDF_XML                
-#                req.body = rdf_xml
-#                response = http.request(req)
-#                if ! response.is_a? Net::HTTPSuccess
-#                   raise CreationError.new(resource_uri, response)
-#                end
-#            end
-#    	end
 
 		def content_type
 			return metadata.first_value([uri, DlibraClient::DCTERMS.type])
