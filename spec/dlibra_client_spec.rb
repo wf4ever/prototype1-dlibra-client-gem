@@ -148,6 +148,70 @@ describe DlibraClient::Workspace do
 							end							
 						end
 					end
+					
+					describe "#metadata" do
+						metadata=
+						it "should retrieve the metadata graph" do
+							metadata = f1.metadata
+						end						
+						it "should have the right mime type" do
+							metadata.first_value([f1.uri, DlibraClient::DCTERMS.type]).should == "text/plain"							
+						end
+						it "should have correct size" do
+							metadata.first_value([f1.uri, DlibraClient::DCTERMS.extent]).should == "32"							
+						end
+						it "should have a modified date from this year" do
+							year = DateTime.now.year.to_s
+							metadata.first_value([f1.uri, DlibraClient::DCTERMS.modified]).should include(year)
+						end
+					end
+					
+					describe "#metadata_rdf" do
+						rdf=
+						it "should retrieve the RDF" do
+							rdf = f1.metadata_rdf	
+						end
+						it "should include the mime type" do
+							rdf.should include("text/plain")
+						end
+						it "should include the extent" do
+							rdf.should include(">32<")
+						end
+					end
+					
+					#describe "#metadata=" do
+					#	it "should allow additional annotations" do
+					#		metadata = f1.metadata
+					#		metadata << [f1.uri, DlibraClient::DCTERMS.description, "An interesting file"]
+					#		f1.metadata = metadata
+					#		f1.metadata_rdf.should include("interesting file")
+					#		f1.metadata.first_value([f1.uri, DlibraClient::DCTERMS.description]).should == "An interesting file"							
+					#	end	
+					#end
+					#describe "#metadata_rdf=" do
+					#	it "should allow additional annotations" do
+					#		f1.metadata_rdf = f1.metadata_rdf.sub("n interesting", " boring")
+					#		f1.metadata_rdf.should include("boring file")
+					#		f1.metadata.first_value([f1.uri, DlibraClient::DCTERMS.description]).should == "An boring file"							
+					#	end	
+					#end
+					
+					describe "#content_type" do
+						it "should be text/plain" do
+							f1.content_type.should == "text/plain"
+						end
+					end
+					describe "#size" do
+						it "should be 32" do
+							f1.size.should == 32
+						end
+					end
+					describe "#modified" do
+						it "should be from this year" do
+							f1.modified.year.should == DateTime.now.year						
+						end
+					end
+					
 					describe "#delete" do
 						it "should delete the resource" do
 							ver1.resources.size.should == 1

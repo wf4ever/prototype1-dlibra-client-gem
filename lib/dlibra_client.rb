@@ -5,8 +5,10 @@
 require 'rubygems'
 require 'uri'
 require 'net/https'
+require 'date'
 require 'rdf'
 require 'rdf/rdfxml'
+
 
 
 module DlibraClient
@@ -295,7 +297,63 @@ module DlibraClient
 	            end
 	        end
         end
-       
+        
+        def metadata
+            return load_rdf_graph(metadata_rdf)      	
+        end
+        
+#        def metadata=(rdf_graph)        	
+#			rdf_xml = RDF::RDFXML::Writer.buffer do |writer|
+#			  rdf_graph.each_statement do |statement|
+#			    writer << statement
+#			  end
+#			end
+#        	self.metadata_rdf=rdf_xml
+#        end
+        
+        def metadata_rdf
+            resource_uri = uri            
+            Net::HTTP.start(resource_uri.host, resource_uri.port) do |http|
+                req = Net::HTTP::Get.new(resource_uri.path)
+                req.basic_auth workspace.username, workspace.password
+                req.add_field "Accept", APPLICATION_RDF_XML
+                response = http.request(req)                 
+                if ! response.is_a? Net::HTTPOK
+                   raise RetrievalError.new(resource_uri, response)
+                end                
+                return response.body
+          	end
+        end
+        
+        
+#        def metadata_rdf=(rdf_xml)
+#            resource_uri = uri            
+#            Net::HTTP.start(resource_uri.host, resource_uri.port) do |http|
+#                req = Net::HTTP::Post.new(resource_uri.path)
+#                req.basic_auth workspace.username, workspace.password
+#                req.content_type = APPLICATION_RDF_XML                
+#                req.body = rdf_xml
+#                response = http.request(req)
+#                if ! response.is_a? Net::HTTPSuccess
+#                   raise CreationError.new(resource_uri, response)
+#                end
+#            end
+#    	end
+
+		def content_type
+			return metadata.first_value([uri, DlibraClient::DCTERMS.type])
+		end
+
+		def size
+			return metadata.first_value([uri, DlibraClient::DCTERMS.extent]).to_i
+		end
+
+		def modified
+			date = metadata.first_value([uri, DlibraClient::DCTERMS.modified])
+			return DateTime.parse(date)
+		end
+
+
     end
 
 
