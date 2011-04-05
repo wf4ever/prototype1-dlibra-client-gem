@@ -108,8 +108,13 @@ describe DlibraClient::Workspace do
 					end
 				end
 
-				describe "#download_zip" do
-					it "should retrieve a zip of manifest and all resources" do
+				describe "#to_zip" do
+					it "should be downloadable as a string" do
+						zip = ver1.to_zip
+						zip.length.should be > 512
+					end
+					
+					it "should download a zip file of manifest and all resources" do
 						file = Tempfile.new("dlibra-test")
 						begin
 							ver1.to_zip(file)
