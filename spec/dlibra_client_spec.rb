@@ -87,13 +87,15 @@ describe DlibraClient::Workspace do
                     end
                 end
                 
-                
+
+                manifest_with_resource=
                 describe "#manifest_rdf" do
                     it "should be RDF/XML" do                        
                         ver1.manifest_rdf.should include("rdf:Description")
                     end
 					it "should include resource.txt" do						
 						ver1.manifest_rdf.should include("resource.txt")
+						manifest_with_resource = ver1.manifest_rdf
 					end
                 end
                 describe "#manifest" do
@@ -116,6 +118,28 @@ describe DlibraClient::Workspace do
                         end    
                     end
                 end
+                
+                describe "#manifest=" do
+                	it "should upload the new manifest graph" do
+                		graph = ver1.manifest
+                		graph.delete( [nil, DlibraClient::DCTERMS.title] )
+                		graph << [ RDF::URI(ver1.uri), DlibraClient::DCTERMS.title, "A good example" ]
+                		ver1.manifest = graph
+                		ver1.manifest_rdf.should include("good example")
+                		title = ver1.manifest.first_value([nil, DlibraClient::DCTERMS.title])
+                		title.should == "A good example"
+                	end
+                end
+
+                describe "#manifest_rdf=" do
+                	it "should upload the new manifest, but ignore removed ROs" do
+                		ver1.manifest_rdf = manifest_with_resource
+                		ver1.manifest_rdf.should_not include("resource.txt")
+                		ver1.manifest_rdf.should_not include("good example")
+                	end
+                end
+
+                
                 describe "#delete" do
                     it "should delete the version" do
                         ro1.versions.size.should == 1

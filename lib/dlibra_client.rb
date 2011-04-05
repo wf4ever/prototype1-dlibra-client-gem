@@ -217,6 +217,16 @@ module DlibraClient
             return load_rdf_graph(manifest_rdf)      	
         end
         
+        def manifest=(rdf_graph)
+        	
+			rdf_xml = RDF::RDFXML::Writer.buffer do |writer|
+			  rdf_graph.each_statement do |statement|
+			    writer << statement
+			  end
+			end
+        	self.manifest_rdf=rdf_xml
+        end
+        
         def manifest_rdf
             resource_uri = URI.parse(uri.to_s + "/manifest.rdf")            
             Net::HTTP.start(resource_uri.host, resource_uri.port) {|http|
@@ -231,9 +241,14 @@ module DlibraClient
                 return response.body
             }                    	
         end
-
-       
+        
+        def manifest_rdf=(rdf_xml)
+            resource_uri = URI.parse(uri.to_s + "/manifest.rdf")
+        	upload_resource(resource_uri, APPLICATION_RDF_XML, rdf_xml)
+        end
+        
     end
+    
 
     class Resource < Abstract
         attr_reader :workspace
