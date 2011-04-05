@@ -6,4 +6,9 @@ To build:
     bundle    
     rake
     gem build dlibra_client.gemspec
-    gem install dlibra_client-0.0.1.gem
+    gem install dlibra_client-*.gem
+
+
+Changelog:
+	0.0.1  First version
+	0.0.2  Added each, exists? and []
