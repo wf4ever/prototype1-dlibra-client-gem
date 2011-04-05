@@ -25,6 +25,26 @@ describe DlibraClient::Workspace do
 				DlibraClient::Workspace.create(BASE, workspace_id, "uncle", ADMIN, ADMIN_PW)
 			}.should raise_error(DlibraClient::CreationError)
 		end
+		
+				
+		#describe "#exists?" do
+		#	it "should exist" do
+		#		workspace.exists?.should == true
+		#	end
+		#end
+
+		#describe "#metadata_rdf" do
+		#	it "should contain some metadata" do
+		#		workspace.metadata_rdf.should include("Aggregation")
+		#	end
+		#end
+		#describe "#metadata" do
+		#	it "should be of aggregation type" do
+		#		workspace.metadata.first_object([workspace.uri, RDF.type]).should == DlibraClient::ORE.Aggregation
+		#	end
+		#end
+
+		
 		describe "#research_objects" do
 			it "should be initially be an empty list" do
 				workspace.research_objects.should == []
@@ -56,16 +76,16 @@ describe DlibraClient::Workspace do
 				wrong.should == nil
 			end
 		end
-		#describe "each" do
-		#	it "should contain ro1" do
-		#		l = []
-		#		for r in workspace
-		#			l << r.uri
-		#		end
-		#		l.size.should == 1
-		#		l[0].uri.to_s.should == ro1.uri.to_s
-		# 	end	
-		#end
+		describe "each" do
+			it "should contain ro1" do
+				l = []
+				for r in workspace
+					l << r.uri
+				end
+				l.size.should == 1
+				l[0].to_s.should == ro1.uri.to_s
+		 	end	
+		end
 		
 		describe DlibraClient::ResearchObject do
 			describe "#exists?" do
@@ -78,6 +98,8 @@ describe DlibraClient::Workspace do
 					ro1.versions.should == []
 				end
 			end
+			
+			
 			describe "#metadata_rdf" do
 				it "should contain some metadata" do
 					ro1.metadata_rdf.should include("Aggregation")
@@ -102,12 +124,57 @@ describe DlibraClient::Workspace do
 					ver1.uri.to_s.should == ro1.uri.to_s + "/ver1"
 				end
 			end
+
+			describe "#[]" do
+				it "should resolve ver1" do
+					v = ro1["ver1"]
+					v.exists?.should == true
+				end
+				it "should not resolve ver2" do
+					wrong = ro1["ver2"]
+					wrong.should == nil
+				end
+			end
+			describe "each" do
+				it "should contain ver1" do
+					l = []
+					for r in ro1
+						l << r.uri
+					end
+					l.size.should == 1
+					l[0].to_s.should == ver1.uri.to_s
+			 	end	
+			end
+
+
+
 			describe DlibraClient::Version do
+
+				describe "#exists?" do
+					it "should exist" do
+						ver1.exists?.should == true
+					end
+				end
+
+
 				describe "#resources" do
 					it "should initially be an empty list" do
 						ver1.resources.should == []
 					end
 				end
+				
+						
+				describe "#metadata_rdf" do
+					it "should contain some metadata" do
+						ver1.metadata_rdf.should include("Aggregation")
+					end
+				end
+				describe "#metadata" do
+					it "should be of aggregation type" do
+						ver1.metadata.first_object([ver1.uri, RDF.type]).should == DlibraClient::ORE.Aggregation
+					end
+				end
+				
 				f1 =
 				describe "#upload_resource" do
 					it "should upload the resource" do
@@ -123,6 +190,29 @@ describe DlibraClient::Workspace do
 						f1.uri.to_s.should == ver1.uri.to_s + "/resource.txt"
 					end
 				end
+					
+					
+				describe "#[]" do
+					it "should resolve ver1" do
+						v = ver1["resource.txt"]
+						v.exists?.should == true
+					end
+					it "should not resolve ver2" do
+						wrong = ver1["notfound.txt"]
+						wrong.should == nil
+					end
+				end
+				describe "each" do
+					it "should contain resource.txt" do
+						l = []
+						for r in ver1
+							l << r.uri
+						end
+						l.size.should == 1
+						l[0].to_s.should == f1.uri.to_s
+				 	end	
+				end
+				
 
 				manifest_with_resource=
 				describe "#manifest_rdf" do
@@ -180,6 +270,13 @@ describe DlibraClient::Workspace do
 				end
 
 				describe DlibraClient::Resource do
+					
+					describe "#exists?" do
+						it "should exist" do
+							f1.exists?.should == true
+						end
+					end
+
 					describe "#content" do
 						it "should return the resource content" do
 							f1.content.should == "Hello world!\nA simple resource.\n"
@@ -280,6 +377,14 @@ describe DlibraClient::Workspace do
 						end
 					end
 				end
+				
+				describe "#exists?" do
+					it "should no longer exist" do
+						f1.exists?.should == false
+					end
+				end
+
+
 
 				describe "#manifest=" do
 					it "should upload the new manifest graph" do
@@ -310,6 +415,14 @@ describe DlibraClient::Workspace do
 						ro1.versions.size.should == 0
 					end
 				end
+				
+				describe "#exists?" do
+					it "should no longer exist" do
+						ver1.exists?.should == false
+					end
+				end
+
+				
 			end
 
 			describe "#delete" do
@@ -335,6 +448,12 @@ describe DlibraClient::Workspace do
 				}.should raise_error
 			end
 		end
+		
+		#describe "#exists?" do
+		#	it "should no longer exist" do
+		#		workspace.exists?.should == false
+		#	end
+		#end
 
 	end
 

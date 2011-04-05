@@ -67,7 +67,7 @@ module DlibraClient
             resource_uri = uri            
             Net::HTTP.start(resource_uri.host, resource_uri.port) do |http|
                 req = Net::HTTP::Get.new(resource_uri.path)
-                req.basic_auth workspace.username, workspace.password
+                req.basic_auth @workspace.username, @workspace.password
                 req.add_field "Accept", APPLICATION_RDF_XML
                 response = http.request(req)                 
                 if ! response.is_a? Net::HTTPOK
@@ -82,7 +82,7 @@ module DlibraClient
 #            resource_uri = uri            
 #            Net::HTTP.start(resource_uri.host, resource_uri.port) do |http|
 #                req = Net::HTTP::Post.new(resource_uri.path)
-#                req.basic_auth workspace.username, workspace.password
+#                req.basic_auth @workspace.username, @workspace.password
 #                req.content_type = APPLICATION_RDF_XML                
 #                req.body = rdf_xml
 #                response = http.request(req)
@@ -91,7 +91,24 @@ module DlibraClient
 #                end
 #            end
 #    	end
-
+		
+		def exists?
+			Net::HTTP.start(uri.host, uri.port) do |http|
+				req = Net::HTTP::Head.new(uri.path)
+				req.basic_auth @workspace.username, @workspace.password
+				req.add_field "Accept", APPLICATION_RDF_XML
+				response = http.request(req)
+				if response.is_a? Net::HTTPNotFound
+					return false
+				end
+				if ! response.is_a? Net::HTTPOK
+					raise RetrievalError.new(uri, response)
+				end
+				return true
+			end
+		end
+		
+		
 	end
 
     # A connection to a Dlibra SRS Workspace
@@ -107,6 +124,7 @@ module DlibraClient
             @uri_slash = URI.join(base_uri+"/", "workspaces/", workspace_id+"/")
             @username = workspace_id
             @password = password
+            @workspace = self
         end
 
         def self.create(base_uri, workspace_id, workspace_password, admin_user, admin_password)
@@ -147,26 +165,31 @@ module DlibraClient
        		end
        	end
 
-		#def each
-		#	return research_objects.each
-		#end
-
-        def research_objects 
+		def each
             ros_uri = @uri_slash + "ROs" 
-            Net::HTTP.start(ros_uri.host, ros_uri.port) {|http|
+            Net::HTTP.start(ros_uri.host, ros_uri.port) do |http|
                 req = Net::HTTP::Get.new(ros_uri.path)
                 req.basic_auth @username, @password
                 response = http.request(req)
                 if ! response.is_a? Net::HTTPOK
                    raise RetrievalError.new(ros_uri, response)
                 end
-
-                ros = []
                 for ro_uri in URI.extract(response.body) do
-                    ros << ResearchObject.new(self, URI.parse(ro_uri))
+                    yield ResearchObject.new(self, URI.parse(ro_uri))
                 end
-                return ros
-            }
+            end
+        end
+              
+            
+		
+
+        def research_objects 
+        	# FIXME: I'm sure there's a cleverer way to do this in Ruby!
+        	ros = []
+        	for ro in self
+        		ros << ro
+        	end
+        	return ros
         end
 
         def delete!(admin_user, admin_password)
@@ -190,23 +213,25 @@ module DlibraClient
             @uri = uri
         end    
 
-		def exists?
-			Net::HTTP.start(uri.host, uri.port) do |http|
-				req = Net::HTTP::Head.new(uri.path)
-				req.basic_auth workspace.username, workspace.password
-				req.add_field "Accept", APPLICATION_RDF_XML
-				response = http.request(req)
-				if response.is_a? Net::HTTPNotFound
-				return false
-				end
-				if ! response.is_a? Net::HTTPOK
-					raise RetrievalError.new(uri, response)
-				end
-				return true
-			end
-		end
+
+        def [](name)
+       	    ro_uri = @uri.to_s + "/" + name
+       		version = Version.new(workspace, self, ro_uri)
+       		if version.exists?
+       			return version
+       		end
+       	end
 
         def versions
+	    	# FIXME: I'm sure there's a cleverer way to do this in Ruby!
+        	versions = []
+        	for v in self
+        		versions << v
+        	end
+        	return versions
+        end
+
+		def each
             Net::HTTP.start(uri.host, uri.port) {|http|
                 req = Net::HTTP::Get.new(uri.path)
                 req.basic_auth workspace.username, workspace.password
@@ -215,12 +240,9 @@ module DlibraClient
                 if ! response.is_a? Net::HTTPOK
                    raise RetrievalError.new(uri, response)
                 end
-
-                versions = []               
                 metadata.query([uri, ORE.aggregates, nil]) do |s,p,version| 
-                    versions << Version.new(workspace, self, URI.parse(version))
+                    yield Version.new(workspace, self, URI.parse(version))
                 end
-                return versions
             }
         end
 
@@ -242,7 +264,7 @@ module DlibraClient
   
     end
 
-    class Version < Abstract
+    class Version < MetaData
         attr_reader :workspace
         attr_reader :ro
         def initialize(workspace, ro, uri)
@@ -251,7 +273,28 @@ module DlibraClient
             @uri = uri
         end    
 
+        def [](path)
+        	if path[0] != "/"
+        		path = "/" + path
+        	end
+       	    resource_uri = @uri.to_s + path
+	       	resource = Resource.new(workspace, ro, self, resource_uri)
+       		if resource.exists?
+       			return resource
+       		end
+       	end
+
         def resources
+	    	# FIXME: I'm sure there's a cleverer way to do this in Ruby!
+        	resources = []
+        	for r in self
+        		resources << r
+        	end
+        	return resources
+        end
+
+
+        def each
             Net::HTTP.start(uri.host, uri.port) {|http|
                 req = Net::HTTP::Get.new(uri.path)
                 req.basic_auth workspace.username, workspace.password
@@ -260,13 +303,10 @@ module DlibraClient
                 if ! response.is_a? Net::HTTPOK
                    raise RetrievalError.new(uri, response)
                 end
-
-                resources = []
                 graph = load_rdf_graph(response.body)
                 graph.query([uri, ORE.aggregates, nil]) do |s,p,resource| 
-                    resources << Resource.new(workspace, ro, self, resource)
+                    yield Resource.new(workspace, ro, self, resource)
                 end
-                return resources
             }
         end 
 
