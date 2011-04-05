@@ -30,7 +30,7 @@ module DlibraClient
     end
 
 	class Abstract < Common
-	      def delete!
+	   	def delete!
             Net::HTTP.start(uri.host, uri.port) {|http|
                 req = Net::HTTP::Delete.new(uri.path)
                 req.basic_auth workspace.username, workspace.password
@@ -40,12 +40,14 @@ module DlibraClient
                 end
             }
         end
+        def uri
+        	return RDF::URI.new(@uri)
+        end
 	end
 
     # A connection to a Dlibra SRS Workspace
     class Workspace < Abstract
 
-        attr_reader :uri
         attr_reader :base_uri
         attr_reader :username
         attr_reader :password
@@ -122,7 +124,6 @@ module DlibraClient
 
     class ResearchObject < Abstract
         attr_reader :workspace
-        attr_reader :uri
         def initialize(workspace, uri)
             @workspace = workspace
             @uri = uri
@@ -140,8 +141,7 @@ module DlibraClient
 
                 versions = []
                 graph = load_rdf_graph(response.body)
-                ro_uri = RDF::URI(uri)
-                graph.query([ro_uri, ORE.aggregates, nil]) do |s,p,version| 
+                graph.query([uri, ORE.aggregates, nil]) do |s,p,version| 
                     versions << Version.new(workspace, self, URI.parse(version))
                 end
                 return versions
@@ -169,7 +169,6 @@ module DlibraClient
     class Version < Abstract
         attr_reader :workspace
         attr_reader :ro
-        attr_reader :uri
         def initialize(workspace, ro, uri)
             @workspace = workspace
             @ro = ro
@@ -188,9 +187,8 @@ module DlibraClient
 
                 resources = []
                 graph = load_rdf_graph(response.body)
-                version_uri = RDF::URI(uri)
-                graph.query([version_uri, ORE.aggregates, nil]) do |s,p,resource| 
-                    resources << Resource.new(workspace, ro, self, URI.parse(resource))
+                graph.query([uri, ORE.aggregates, nil]) do |s,p,resource| 
+                    resources << Resource.new(workspace, ro, self, resource)
                 end
                 return resources
             }
@@ -253,7 +251,6 @@ module DlibraClient
     class Resource < Abstract
         attr_reader :workspace
         attr_reader :ro
-        attr_reader :uri
         attr_reader :version
         def initialize(workspace, ro, version, uri)
             @workspace = workspace
@@ -275,8 +272,8 @@ module DlibraClient
             super "#{response.code} from #{uri}: #{response.body}"
         end
         
-        attr :uri
-        attr :response
+        attr_reader :uri
+        attr_reader :response
     end
 
 

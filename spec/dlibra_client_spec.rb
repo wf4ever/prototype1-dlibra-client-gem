@@ -122,12 +122,11 @@ describe DlibraClient::Workspace do
                 describe "#manifest=" do
                 	it "should upload the new manifest graph" do
                 		graph = ver1.manifest
-                		ver1_uri = RDF::URI(ver1.uri)
-                		graph.delete( [ver1_uri, DlibraClient::DCTERMS.title] )
-                		graph << [ ver1_uri, DlibraClient::DCTERMS.title, "A good example" ]
+                		graph.delete( [ver1.uri, DlibraClient::DCTERMS.title] )
+                		graph << [ ver1.uri, DlibraClient::DCTERMS.title, "A good example" ]
                 		ver1.manifest = graph
                 		ver1.manifest_rdf.should include("good example")
-                		title = ver1.manifest.first_value([ver1_uri, DlibraClient::DCTERMS.title])
+                		title = ver1.manifest.first_value([ver1.uri, DlibraClient::DCTERMS.title])
                 		title.should == "A good example"
                 	end
                 end
