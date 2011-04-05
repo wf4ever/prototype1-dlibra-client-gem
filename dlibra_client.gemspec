@@ -25,6 +25,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'uuidtools', '~> 2.1'
   s.add_development_dependency 'echoe', '~> 4.5'
   s.add_development_dependency 'fuubar', '~> 0.0.4'
+  s.add_development_dependency 'zip', '~> 2.0'
   
   if s.respond_to? :specification_version then
     s.specification_version = 3

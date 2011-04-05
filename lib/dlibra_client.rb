@@ -11,6 +11,7 @@ require 'rdf/rdfxml'
 
 module DlibraClient
     APPLICATION_RDF_XML="application/rdf+xml"
+    APPLICATION_ZIP="application/zip"
     DC = RDF::Vocabulary.new("http://purl.org/dc/elements/1.1/")
     ORE = RDF::Vocabulary.new("http://www.openarchives.org/ore/terms/")    
     DCTERMS = RDF::Vocabulary.new("http://purl.org/dc/terms/")
@@ -152,7 +153,7 @@ module DlibraClient
         def create_version(name)
             version_uri = URI.parse(@uri.to_s + "/") + name
             Net::HTTP.start(version_uri.host, version_uri.port) {|http|
-                # FIXME: Why is this POST?
+                # FIXME: Why is this POST instead of PUT?
                 req = Net::HTTP::Post.new(version_uri.path)
                 req.basic_auth workspace.username, workspace.password
                 response = http.request(req)
@@ -197,7 +198,7 @@ module DlibraClient
         def upload_resource(ro_path, content_type, data)
             resource_uri = URI.parse(uri.to_s + "/") + ro_path
             Net::HTTP.start(resource_uri.host, resource_uri.port) {|http|
-                # FIXME: Why is this POST?
+                # FIXME: Why is this POST instead of PUT?
                 req = Net::HTTP::Post.new(resource_uri.path)
                 req.basic_auth workspace.username, workspace.password
                 req.content_type = content_type                
@@ -215,8 +216,7 @@ module DlibraClient
             return load_rdf_graph(manifest_rdf)      	
         end
         
-        def manifest=(rdf_graph)
-        	
+        def manifest=(rdf_graph)        	
 			rdf_xml = RDF::RDFXML::Writer.buffer do |writer|
 			  rdf_graph.each_statement do |statement|
 			    writer << statement
@@ -228,7 +228,6 @@ module DlibraClient
         def manifest_rdf
             resource_uri = URI.parse(uri.to_s + "/manifest.rdf")            
             Net::HTTP.start(resource_uri.host, resource_uri.port) {|http|
-                # FIXME: Why is this POST?
                 req = Net::HTTP::Get.new(resource_uri.path)
                 req.basic_auth workspace.username, workspace.password
                 req.add_field "Accept", APPLICATION_RDF_XML
@@ -245,6 +244,25 @@ module DlibraClient
         	upload_resource(resource_uri, APPLICATION_RDF_XML, rdf_xml)
         end
         
+        def to_zip(file=nil)
+        	Net::HTTP.start(uri.host, uri.port) do |http|
+                req = Net::HTTP::Get.new(uri.path)
+                req.basic_auth workspace.username, workspace.password
+                req.add_field "Accept", APPLICATION_ZIP
+                http.request(req) do |response|                
+	                if ! response.is_a? Net::HTTPOK
+	                   raise RetrievalError.new(resource_uri, response)
+	                end
+	                if (! file)
+		                 return response.body                	
+	                end
+	                response.read_body do |segment|
+	                	file.write(segment)
+	                end
+	            end
+	        end
+        end
+                
     end
     
 
