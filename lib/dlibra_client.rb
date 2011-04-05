@@ -138,6 +138,18 @@ module DlibraClient
                 return ResearchObject.new(self, ro_uri)
             }
         end
+        
+        def [](name)
+       	    ro_uri = @uri_slash + "ROs/" + name
+       		ro = ResearchObject.new(self, ro_uri)
+       		if ro.exists?
+       			return ro
+       		end
+       	end
+
+		#def each
+		#	return research_objects.each
+		#end
 
         def research_objects 
             ros_uri = @uri_slash + "ROs" 
@@ -177,6 +189,22 @@ module DlibraClient
             @workspace = workspace
             @uri = uri
         end    
+
+		def exists?
+			Net::HTTP.start(uri.host, uri.port) do |http|
+				req = Net::HTTP::Head.new(uri.path)
+				req.basic_auth workspace.username, workspace.password
+				req.add_field "Accept", APPLICATION_RDF_XML
+				response = http.request(req)
+				if response.is_a? Net::HTTPNotFound
+				return false
+				end
+				if ! response.is_a? Net::HTTPOK
+					raise RetrievalError.new(uri, response)
+				end
+				return true
+			end
+		end
 
         def versions
             Net::HTTP.start(uri.host, uri.port) {|http|

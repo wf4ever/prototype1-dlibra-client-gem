@@ -45,7 +45,34 @@ describe DlibraClient::Workspace do
 				ro.uri.to_s.should == workspace.uri.to_s + "/ROs/ro1"
 			end
 		end
+		
+		describe "#[]" do
+			it "should resolve ro1" do
+				r = workspace["ro1"]
+				r.exists?.should == true
+			end
+			it "should not resolve ro2" do
+				wrong = workspace["ro2"]
+				wrong.should == nil
+			end
+		end
+		#describe "each" do
+		#	it "should contain ro1" do
+		#		l = []
+		#		for r in workspace
+		#			l << r.uri
+		#		end
+		#		l.size.should == 1
+		#		l[0].uri.to_s.should == ro1.uri.to_s
+		# 	end	
+		#end
+		
 		describe DlibraClient::ResearchObject do
+			describe "#exists?" do
+				it "should exist" do
+					ro1.exists?.should == true
+				end
+			end
 			describe "#versions" do
 				it "should initially be an empty list" do
 					ro1.versions.should == []
@@ -290,6 +317,12 @@ describe DlibraClient::Workspace do
 					workspace.research_objects.size.should == 1
 					ro1.delete!
 					workspace.research_objects.size.should == 0
+				end
+			end
+			
+			describe "#exists?" do
+				it "should no longer exist" do
+					ro1.exists?.should == false
 				end
 			end
 
