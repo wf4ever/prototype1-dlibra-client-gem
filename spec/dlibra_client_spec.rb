@@ -195,6 +195,7 @@ describe DlibraClient::Workspace do
           end
           it "should not resolve ver2" do
             wrong = ver1["notfound.txt"]
+            #puts wrong.metadata_rdf
             wrong.should == nil
           end
         end

@@ -273,6 +273,9 @@ module DlibraClient
 				if response.is_a? Net::HTTPNotFound
 					return false
 				end
+				#puts "Checking " + uri.to_s
+				#puts response
+				#puts response.to_hash
 				if ! response.is_a? Net::HTTPOK
 					raise RetrievalError.new(uri, response)
 				end
@@ -459,7 +462,8 @@ module DlibraClient
         	if path[0] != "/"
         		path = "/" + path
         	end
-       	    resource_uri = @uri.to_s + path
+       	  resource_uri = @uri.to_s + path
+       	  #puts "Resource " + resource_uri
 	       	resource = Resource.new(workspace, ro, self, resource_uri)
        		if resource.exists?
        			return resource
@@ -548,7 +552,7 @@ module DlibraClient
         
         def to_zip(file=nil)
         	Net::HTTP.start(uri.host, uri.port) do |http|
-                req = Net::HTTP::Get.new(uri.path)
+                req = Net::HTTP::Get.new(uri.path + "?content=true")
                 req.basic_auth workspace.username, workspace.password
                 req["Accept"] = APPLICATION_ZIP
                 http.request(req) do |response|                
@@ -566,16 +570,21 @@ module DlibraClient
         end
         
         def clone(name)
-        	version_uri = URI.parse(@ro.uri.to_s + "/") + name
-            Net::HTTP.start(version_uri.host, version_uri.port) do |http|
-                req = Net::HTTP::Post.new(version_uri.path)
+        	
+            Net::HTTP.start(@ro.uri.host, @ro.uri.port) do |http|
+                req = Net::HTTP::Post.new(@ro.uri.path)
                 req.basic_auth workspace.username, workspace.password
                 req.content_type = TEXT_PLAIN
-                req.body = self.uri.to_s
+                req.body = name + "\n" + self.uri.to_s  
                 response = http.request(req)
+                #puts "Body", req.body
+                #puts "Req", req.to_hash
+                #puts "Response", response.to_hash
                 if ! response.is_a? Net::HTTPCreated 
                    raise CreationError.new(version_uri, response)
                 end
+                # FIXME: Created version should be returned from service, workaround due to WFE-62
+                version_uri = URI.parse(@ro.uri.to_s + "/") + name
                 return Version.new(workspace, self, version_uri)
             end
         end
