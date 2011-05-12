@@ -10,6 +10,7 @@ To build:
 
 
 Changelog:
-	0.0.1  First version
-	0.0.2  Added each, exists? and []
+    0.0.1  First version
+    0.0.2  Added each, exists? and []
     0.0.3  Added .annotations on rdf graphs returned
+    0.0.4  Updated rdf and annotations dependencies
