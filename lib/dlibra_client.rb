@@ -235,7 +235,8 @@ module DlibraClient
 #        end
         
         def metadata_rdf
-            resource_uri = uri            
+            resource_uri = uri      
+            #puts "Getting metadata for ", uri      
             Net::HTTP.start(resource_uri.host, resource_uri.port) do |http|
                 req = Net::HTTP::Get.new(resource_uri.path)
                 req.basic_auth @workspace.username, @workspace.password
@@ -318,7 +319,7 @@ module DlibraClient
         end
 
         def create_research_object(name)
-            uri = @uri_slash + "ROs/"
+            uri = @uri_slash + "ROs"
             Net::HTTP.start(uri.host, uri.port) {|http|
                 req = Net::HTTP::Post.new(uri.path)
                 req.basic_auth @username, @password
@@ -329,7 +330,7 @@ module DlibraClient
                    raise CreationError.new(uri, response)
                 end
                 # FIXME: Should be picked up from Location header, workaround due to WFE-62
-                ro_uri = uri + name
+                ro_uri = uri.to_s + "/" + name
                 return ResearchObject.new(self, ro_uri)
             }
         end
@@ -425,7 +426,7 @@ module DlibraClient
 
 
         def create_version(name)
-            uri = URI.parse(@uri.to_s + "/")
+            
             Net::HTTP.start(uri.host, uri.port) {|http|
                 # FIXME: Why is this POST instead of PUT?
                 req = Net::HTTP::Post.new(uri.path)
@@ -437,7 +438,7 @@ module DlibraClient
                    raise CreationError.new(uri, response)
                 end
                 # FIXME: Get this from Location header, hardcoded due to WFE-62
-                version_uri = uri + name
+                version_uri = @uri.to_s + "/" + name
                 return Version.new(workspace, self, version_uri)
             }
         end
