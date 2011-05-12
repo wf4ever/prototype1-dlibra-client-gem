@@ -299,17 +299,19 @@ module DlibraClient
         end
 
         def self.create(base_uri, workspace_id, workspace_password, admin_user, admin_password)
-            uri = URI.join(base_uri+"/", "workspaces/", workspace_id)
+            uri = URI.join(base_uri+"/", "workspaces")
             Net::HTTP.start(uri.host, uri.port) {|http|
-                req = Net::HTTP::Put.new(uri.path)
+                req = Net::HTTP::Post.new(uri.path)
                 req.basic_auth admin_user,admin_password 
-                req.body = workspace_password
+                req.body = workspace_id  + "\n" + workspace_password
                 req.add_field "Content-Type", "text/plain"
 
                 response = http.request(req)
                 if ! response.is_a? Net::HTTPCreated 
                    raise CreationError.new(uri, response)
                 end
+                # FIXME: Should be picked up from Location header, workaround due to WFE-62
+                workspace_uri = URI.join(base_uri+"/", "workspaces/" + workspace_id )
                 return Workspace.new(base_uri, workspace_id, workspace_password)
             }
 
