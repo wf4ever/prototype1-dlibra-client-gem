@@ -239,7 +239,7 @@ module DlibraClient
             Net::HTTP.start(resource_uri.host, resource_uri.port) do |http|
                 req = Net::HTTP::Get.new(resource_uri.path)
                 req.basic_auth @workspace.username, @workspace.password
-                req[:Accept] = APPLICATION_RDF_XML
+                req["Accept"] = APPLICATION_RDF_XML
                 response = http.request(req)                 
                 if ! response.is_a? Net::HTTPOK
                    raise RetrievalError.new(resource_uri, response)
@@ -267,7 +267,7 @@ module DlibraClient
 			Net::HTTP.start(uri.host, uri.port) do |http|
 				req = Net::HTTP::Head.new(uri.path)
 				req.basic_auth @workspace.username, @workspace.password
-				req[:Accept] = APPLICATION_RDF_XML
+				req["Accept"] = APPLICATION_RDF_XML
 				response = http.request(req)
 				if response.is_a? Net::HTTPNotFound
 					return false
@@ -412,7 +412,7 @@ module DlibraClient
           Net::HTTP.start(uri.host, uri.port) {|http|
             req = Net::HTTP::Get.new(uri.path)
             req.basic_auth workspace.username, workspace.password
-            req[:Accept] = APPLICATION_RDF_XML
+            req["Accept"] = APPLICATION_RDF_XML
             response = http.request(req)
             if ! response.is_a? Net::HTTPOK
               raise RetrievalError.new(uri, response)
@@ -479,7 +479,7 @@ module DlibraClient
             Net::HTTP.start(uri.host, uri.port) {|http|
                 req = Net::HTTP::Get.new(uri.path)
                 req.basic_auth workspace.username, workspace.password
-                req[:Accept] = APPLICATION_RDF_XML
+                req["Accept"] = APPLICATION_RDF_XML
                 response = http.request(req)
                 if ! response.is_a? Net::HTTPOK
                    raise RetrievalError.new(uri, response)
@@ -531,7 +531,7 @@ module DlibraClient
             Net::HTTP.start(resource_uri.host, resource_uri.port) {|http|
                 req = Net::HTTP::Get.new(resource_uri.path)
                 req.basic_auth workspace.username, workspace.password
-                req[:Accept] = APPLICATION_RDF_XML
+                req["Accept"] = APPLICATION_RDF_XML
                 response = http.request(req)                 
                 if ! response.is_a? Net::HTTPOK
                    raise RetrievalError.new(resource_uri, response)
@@ -549,7 +549,7 @@ module DlibraClient
         	Net::HTTP.start(uri.host, uri.port) do |http|
                 req = Net::HTTP::Get.new(uri.path)
                 req.basic_auth workspace.username, workspace.password
-                req[:Accept] = APPLICATION_ZIP
+                req["Accept"] = APPLICATION_ZIP
                 http.request(req) do |response|                
 	                if ! response.is_a? Net::HTTPOK
 	                   raise RetrievalError.new(uri, response)
