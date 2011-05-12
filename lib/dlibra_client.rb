@@ -239,7 +239,7 @@ module DlibraClient
             Net::HTTP.start(resource_uri.host, resource_uri.port) do |http|
                 req = Net::HTTP::Get.new(resource_uri.path)
                 req.basic_auth @workspace.username, @workspace.password
-                req.add_field "Accept", APPLICATION_RDF_XML
+                req[:Accept] = APPLICATION_RDF_XML
                 response = http.request(req)                 
                 if ! response.is_a? Net::HTTPOK
                    raise RetrievalError.new(resource_uri, response)
@@ -267,7 +267,7 @@ module DlibraClient
 			Net::HTTP.start(uri.host, uri.port) do |http|
 				req = Net::HTTP::Head.new(uri.path)
 				req.basic_auth @workspace.username, @workspace.password
-				req.add_field "Accept", APPLICATION_RDF_XML
+				req[:Accept] = APPLICATION_RDF_XML
 				response = http.request(req)
 				if response.is_a? Net::HTTPNotFound
 					return false
@@ -299,12 +299,12 @@ module DlibraClient
         end
 
         def self.create(base_uri, workspace_id, workspace_password, admin_user, admin_password)
-            uri = URI.join(base_uri+"/", "workspaces")
+            uri = URI.join(base_uri+"/", "workspaces/")
             Net::HTTP.start(uri.host, uri.port) {|http|
                 req = Net::HTTP::Post.new(uri.path)
                 req.basic_auth admin_user,admin_password 
                 req.body = workspace_id  + "\n" + workspace_password
-                req.add_field "Content-Type", "text/plain"
+                req.content_type = TEXT_PLAIN
 
                 response = http.request(req)
                 if ! response.is_a? Net::HTTPCreated 
@@ -318,14 +318,18 @@ module DlibraClient
         end
 
         def create_research_object(name)
-            ro_uri = @uri_slash + "ROs/" + name
-            Net::HTTP.start(ro_uri.host, ro_uri.port) {|http|
-                req = Net::HTTP::Put.new(ro_uri.path)
+            uri = @uri_slash + "ROs/"
+            Net::HTTP.start(uri.host, uri.port) {|http|
+                req = Net::HTTP::Post.new(uri.path)
                 req.basic_auth @username, @password
+                req.body = name
+                req.content_type = TEXT_PLAIN
                 response = http.request(req)
-                if ! response.is_a? Net::HTTPCreated 
-                   raise CreationError.new(ro_uri, response)
+                if ! response.is_a? Net::HTTPCreated
+                   raise CreationError.new(uri, response)
                 end
+                # FIXME: Should be picked up from Location header, workaround due to WFE-62
+                ro_uri = uri + name
                 return ResearchObject.new(self, ro_uri)
             }
         end
@@ -408,7 +412,7 @@ module DlibraClient
           Net::HTTP.start(uri.host, uri.port) {|http|
             req = Net::HTTP::Get.new(uri.path)
             req.basic_auth workspace.username, workspace.password
-            req.add_field "Accept", APPLICATION_RDF_XML
+            req[:Accept] = APPLICATION_RDF_XML
             response = http.request(req)
             if ! response.is_a? Net::HTTPOK
               raise RetrievalError.new(uri, response)
@@ -421,15 +425,19 @@ module DlibraClient
 
 
         def create_version(name)
-            version_uri = URI.parse(@uri.to_s + "/") + name
-            Net::HTTP.start(version_uri.host, version_uri.port) {|http|
+            uri = URI.parse(@uri.to_s + "/")
+            Net::HTTP.start(uri.host, uri.port) {|http|
                 # FIXME: Why is this POST instead of PUT?
-                req = Net::HTTP::Post.new(version_uri.path)
+                req = Net::HTTP::Post.new(uri.path)
+                req.body = name
+                req.content_type = TEXT_PLAIN
                 req.basic_auth workspace.username, workspace.password
                 response = http.request(req)
                 if ! response.is_a? Net::HTTPCreated 
-                   raise CreationError.new(version_uri, response)
+                   raise CreationError.new(uri, response)
                 end
+                # FIXME: Get this from Location header, hardcoded due to WFE-62
+                version_uri = uri + name
                 return Version.new(workspace, self, version_uri)
             }
         end
@@ -471,7 +479,7 @@ module DlibraClient
             Net::HTTP.start(uri.host, uri.port) {|http|
                 req = Net::HTTP::Get.new(uri.path)
                 req.basic_auth workspace.username, workspace.password
-                req.add_field "Accept", APPLICATION_RDF_XML
+                req[:Accept] = APPLICATION_RDF_XML
                 response = http.request(req)
                 if ! response.is_a? Net::HTTPOK
                    raise RetrievalError.new(uri, response)
@@ -523,7 +531,7 @@ module DlibraClient
             Net::HTTP.start(resource_uri.host, resource_uri.port) {|http|
                 req = Net::HTTP::Get.new(resource_uri.path)
                 req.basic_auth workspace.username, workspace.password
-                req.add_field "Accept", APPLICATION_RDF_XML
+                req[:Accept] = APPLICATION_RDF_XML
                 response = http.request(req)                 
                 if ! response.is_a? Net::HTTPOK
                    raise RetrievalError.new(resource_uri, response)
@@ -541,7 +549,7 @@ module DlibraClient
         	Net::HTTP.start(uri.host, uri.port) do |http|
                 req = Net::HTTP::Get.new(uri.path)
                 req.basic_auth workspace.username, workspace.password
-                req.add_field "Accept", APPLICATION_ZIP
+                req[:Accept] = APPLICATION_ZIP
                 http.request(req) do |response|                
 	                if ! response.is_a? Net::HTTPOK
 	                   raise RetrievalError.new(uri, response)
