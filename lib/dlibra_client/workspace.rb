@@ -67,14 +67,14 @@ module DlibraClient
         end
         
         def [](name)
-       	    ro_uri = @uri_slash + "ROs/" + name
-       		ro = ResearchObject.new(self, ro_uri)
-       		if ro.exists?
-       			return ro
-       		end
-       	end
+               ro_uri = @uri_slash + "ROs/" + name
+               ro = ResearchObject.new(self, ro_uri)
+               if ro.exists?
+                   return ro
+               end
+           end
 
-		def each
+        def each
             ros_uri = @uri_slash + "ROs" 
             Net::HTTP.start(ros_uri.host, ros_uri.port) do |http|
                 req = Net::HTTP::Get.new(ros_uri.path)
@@ -90,15 +90,15 @@ module DlibraClient
         end
               
             
-		
+        
 
         def research_objects 
-        	# FIXME: I'm sure there's a cleverer way to do this in Ruby!
-        	ros = []
-        	for ro in self
-        		ros << ro
-        	end
-        	return ros
+            # FIXME: I'm sure there's a cleverer way to do this in Ruby!
+            ros = []
+            for ro in self
+                ros << ro
+            end
+            return ros
         end
 
         def delete!(admin_user, admin_password)

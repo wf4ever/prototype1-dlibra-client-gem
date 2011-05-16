@@ -7,49 +7,49 @@ require 'rdf'
 
 module DlibraClient
 
-    class Annotations
+  class Annotations
       
-      attr_reader :graph
-      attr_reader :resource
+    attr_reader :graph
+    attr_reader :resource
       
-      def initialize(resource=RDF::Node.uuid, graph=RDF::Graph.new)
-        @graph = graph        
-        @resource = case resource
-          when RDF::Resource then resource
-          else RDF::URI.parse(resource.to_s)
+    def initialize(resource=RDF::Node.uuid, graph=RDF::Graph.new)
+      @graph = graph        
+      @resource = case resource
+        when RDF::Resource then resource
+        else RDF::URI.parse(resource.to_s)
       end
-      end
+    end
 
-      def method_missing(property, *args, &block)
-          if args.empty?
-                # getter
-            p = self[property]
-                if p.size < 2
-                    # unpack singleton list or return nil
-                    return p[0]
-                else 
-                    return p
-                end
-          elsif args.size == 1 && property.to_s.end_with?("=")
-                # setter
-            name = property[0..-2]
-                value = args[0]
-                if ! name.respond_to?(:each) 
-                    # wrap it
-                    value = [value]
-                end
-        self[name] = value
-                return args[0]
-          else
-                super # fail
-          end
-      end
-
-        def each
-            graph.query([resource]).each do |s,p,o|
-                yield uri_to_key(p), resolve_object(o)
-            end
+    def method_missing(property, *args, &block)
+      if args.empty?
+        # getter
+        p = self[property]
+        if p.size < 2
+          # unpack singleton list or return nil
+          return p[0]
+        else 
+          return p
         end
+        elsif args.size == 1 && property.to_s.end_with?("=")
+              # setter
+          name = property[0..-2]
+          value = args[0]
+          if ! name.respond_to?(:each) 
+            # wrap it
+            value = [value]
+          end
+          self[name] = value
+          return args[0]
+        else
+          super # fail
+        end
+      end
+
+      def each
+        graph.query([resource]).each do |s,p,o|
+          yield uri_to_key(p), resolve_object(o)
+        end
+      end
     
     def [](name)
       pred = parse_qname(name)

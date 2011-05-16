@@ -11,18 +11,18 @@ require 'dlibra_client/abstract'
 
 module DlibraClient
 
-	class MetaData < Abstract
-		def metadata
-            return load_rdf_graph(metadata_rdf)      	
+    class MetaData < Abstract
+        def metadata
+            return load_rdf_graph(metadata_rdf)          
         end
         
-#        def metadata=(rdf_graph)        	
-#			rdf_xml = RDF::RDFXML::Writer.buffer do |writer|
-#			  rdf_graph.each_statement do |statement|
-#			    writer << statement
-#			  end
-#			end
-#        	self.metadata_rdf=rdf_xml
+#        def metadata=(rdf_graph)            
+#            rdf_xml = RDF::RDFXML::Writer.buffer do |writer|
+#              rdf_graph.each_statement do |statement|
+#                writer << statement
+#              end
+#            end
+#            self.metadata_rdf=rdf_xml
 #        end
         
         def metadata_rdf
@@ -37,7 +37,7 @@ module DlibraClient
                    raise RetrievalError.new(resource_uri, response)
                 end                
                 return response.body
-          	end
+              end
         end
         
         
@@ -53,29 +53,29 @@ module DlibraClient
 #                   raise CreationError.new(resource_uri, response)
 #                end
 #            end
-#    	end
-		
-		def exists?
-			Net::HTTP.start(uri.host, uri.port) do |http|
-				req = Net::HTTP::Head.new(uri.path)
-				req.basic_auth @workspace.username, @workspace.password
-				req["Accept"] = APPLICATION_RDF_XML
-				response = http.request(req)
-				if response.is_a? Net::HTTPNotFound
-					return false
-				end
-				#puts "Checking " + uri.to_s
-				#puts response
-				#puts response.to_hash
-				if ! response.is_a? Net::HTTPOK
-					raise RetrievalError.new(uri, response)
-				end
-				return true
-			end
-		end
-		
-		
-	end
+#        end
+        
+        def exists?
+            Net::HTTP.start(uri.host, uri.port) do |http|
+                req = Net::HTTP::Head.new(uri.path)
+                req.basic_auth @workspace.username, @workspace.password
+                req["Accept"] = APPLICATION_RDF_XML
+                response = http.request(req)
+                if response.is_a? Net::HTTPNotFound
+                    return false
+                end
+                #puts "Checking " + uri.to_s
+                #puts response
+                #puts response.to_hash
+                if ! response.is_a? Net::HTTPOK
+                    raise RetrievalError.new(uri, response)
+                end
+                return true
+            end
+        end
+        
+        
+    end
 
    
 end

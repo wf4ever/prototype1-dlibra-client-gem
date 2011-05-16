@@ -26,24 +26,24 @@ module DlibraClient
         end    
 
         def [](path)
-        	if path[0] != "/"
-        		path = "/" + path
-        	end
-       	  resource_uri = @uri.to_s + path
-       	  #puts "Resource " + resource_uri
-	       	resource = Resource.new(workspace, ro, self, resource_uri)
-       		if resource.exists?
-       			return resource
-       		end
-       	end
+            if path[0] != "/"
+                path = "/" + path
+            end
+             resource_uri = @uri.to_s + path
+             #puts "Resource " + resource_uri
+               resource = Resource.new(workspace, ro, self, resource_uri)
+               if resource.exists?
+                   return resource
+               end
+           end
 
         def resources
-	    	# FIXME: I'm sure there's a cleverer way to do this in Ruby!
-        	resources = []
-        	for r in self
-        		resources << r
-        	end
-        	return resources
+            # FIXME: I'm sure there's a cleverer way to do this in Ruby!
+            resources = []
+            for r in self
+                resources << r
+            end
+            return resources
         end
 
 
@@ -84,18 +84,18 @@ module DlibraClient
             return load_rdf_graph(manifest_rdf)
         end
         
-        def manifest=(annotations)        	
+        def manifest=(annotations)            
             rdf_graph = case annotations
                 when RDF::Graph then annotations
                 else annotations.graph
             end
     
-			rdf_xml = RDF::RDFXML::Writer.buffer do |writer|
-			  rdf_graph.each_statement do |statement|
-			    writer << statement
-			  end
-			end
-        	self.manifest_rdf=rdf_xml
+            rdf_xml = RDF::RDFXML::Writer.buffer do |writer|
+              rdf_graph.each_statement do |statement|
+                writer << statement
+              end
+            end
+            self.manifest_rdf=rdf_xml
         end
         
         def manifest_rdf
@@ -109,35 +109,35 @@ module DlibraClient
                    raise RetrievalError.new(resource_uri, response)
                 end                
                 return response.body
-            }                    	
+            }                        
         end
         
         def manifest_rdf=(rdf_xml)
             resource_uri = URI.parse(uri.to_s + "/manifest.rdf")
-        	upload_resource(resource_uri, APPLICATION_RDF_XML, rdf_xml)
+            upload_resource(resource_uri, APPLICATION_RDF_XML, rdf_xml)
         end
         
         def to_zip(file=nil)
-        	Net::HTTP.start(uri.host, uri.port) do |http|
+            Net::HTTP.start(uri.host, uri.port) do |http|
                 req = Net::HTTP::Get.new(uri.path + "?content=true")
                 req.basic_auth workspace.username, workspace.password
                 req["Accept"] = APPLICATION_ZIP
                 http.request(req) do |response|                
-	                if ! response.is_a? Net::HTTPOK
-	                   raise RetrievalError.new(uri, response)
-	                end
-	                if (! file)
-		                 return response.body                	
-	                end
-	                response.read_body do |segment|
-	                	file.write(segment)
-	                end
-	            end
-	        end
+                    if ! response.is_a? Net::HTTPOK
+                       raise RetrievalError.new(uri, response)
+                    end
+                    if (! file)
+                         return response.body                    
+                    end
+                    response.read_body do |segment|
+                        file.write(segment)
+                    end
+                end
+            end
         end
         
         def clone(name)
-        	
+            
             Net::HTTP.start(@ro.uri.host, @ro.uri.port) do |http|
                 req = Net::HTTP::Post.new(@ro.uri.path)
                 req.basic_auth workspace.username, workspace.password

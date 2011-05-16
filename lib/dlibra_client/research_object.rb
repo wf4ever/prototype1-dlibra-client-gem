@@ -21,20 +21,20 @@ module DlibraClient
 
 
         def [](name)
-       	    ro_uri = @uri.to_s + "/" + name
-       		version = Version.new(workspace, self, ro_uri)
-       		if version.exists?
-       			return version
-       		end
-       	end
+               ro_uri = @uri.to_s + "/" + name
+               version = Version.new(workspace, self, ro_uri)
+               if version.exists?
+                   return version
+               end
+           end
 
         def versions
-	    	# FIXME: I'm sure there's a cleverer way to do this in Ruby!
-        	versions = []
-        	for v in self
-        		versions << v
-        	end
-        	return versions
+            # FIXME: I'm sure there's a cleverer way to do this in Ruby!
+            versions = []
+            for v in self
+                versions << v
+            end
+            return versions
         end
 
         def each
