@@ -7,8 +7,8 @@ require 'uri'
 require 'net/https'
 require 'date'
 
-require 'errors.rb'
-require 'constants.rb'
+require 'dlibra_client/errors'
+require 'dlibra_client/constants'
 
 module DlibraClient
 

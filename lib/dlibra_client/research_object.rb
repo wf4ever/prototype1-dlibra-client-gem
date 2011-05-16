@@ -6,9 +6,9 @@ require 'rubygems'
 require 'uri'
 require 'net/https'
 
-require 'constants.rb'
-require 'metadata.rb'
-require 'version.rb'
+require 'dlibra_client/constants'
+require 'dlibra_client/metadata'
+require 'dlibra_client/version'
 
 module DlibraClient
 

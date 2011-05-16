@@ -8,9 +8,9 @@ require 'net/https'
 require 'rdf'
 require 'rdf/rdfxml'
 
-require 'constants.rb'
-require 'errors.rb'
-require 'annotations_graph.rb'
+require 'dlibra_client/constants'
+require 'dlibra_client/errors'
+require 'dlibra_client/annotation_graph'
 
 module DlibraClient
 

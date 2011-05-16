@@ -5,7 +5,7 @@
 require 'rubygems'
 require 'rdf'
 
-require 'annotations.rb'
+require 'dlibra_client/annotations'
 
 module DlibraClient
 

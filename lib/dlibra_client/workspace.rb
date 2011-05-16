@@ -6,10 +6,10 @@ require 'rubygems'
 require 'uri'
 require 'net/https'
 
-require 'constants.rb'
-require 'errors.rb'
-require 'abstract.rb'
-require 'research_object.rb'
+require 'dlibra_client/constants'
+require 'dlibra_client/errors'
+require 'dlibra_client/abstract'
+require 'dlibra_client/research_object'
 
 module DlibraClient
 

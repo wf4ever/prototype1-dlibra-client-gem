@@ -9,10 +9,10 @@ require 'date'
 require 'rdf'
 require 'rdf/rdfxml'
 
-require 'constants.rb'
-require 'errors.rb'
-require 'metadata.rb'
-require 'resource.rb'
+require 'dlibra_client/constants'
+require 'dlibra_client/errors'
+require 'dlibra_client/metadata'
+require 'dlibra_client/resource'
 
 module DlibraClient
 
