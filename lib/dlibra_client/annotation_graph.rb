@@ -43,7 +43,7 @@ module DlibraClient
       if path == nil
         annotation_uri = uri
       elsif path.is_a? RDF::Resource
-        annotation_uri = path
+      annotation_uri = path
       else
         annotation_uri = RDF::URI.new(URI.join(uri, path))
       end

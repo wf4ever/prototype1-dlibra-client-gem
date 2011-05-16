@@ -4,28 +4,27 @@
 
 module DlibraClient
 
-    class DlibraError < StandardError
-    end
+  class DlibraError < StandardError
+  end
 
-    class DlibraHttpError < DlibraError
-        def initialize(uri, response)
-            @uri = uri
-            @response = response
-            super "#{response.code} from #{uri}: #{response.body}"
-        end
-        
-        attr_reader :uri
-        attr_reader :response
-    end
+  class DlibraHttpError < DlibraError
+    attr_reader :uri
+    attr_reader :response
+    def initialize(uri, response)
+      @uri = uri
+      @response = response
+      super "#{response.code} from #{uri}: #{response.body}"
+    end    
+  end
 
 
-    class CreationError < DlibraHttpError
-    end
+  class CreationError < DlibraHttpError
+  end
 
-    class DeletionError < DlibraHttpError
-    end
+  class DeletionError < DlibraHttpError
+  end
 
-    class RetrievalError < DlibraHttpError
-    end
+  class RetrievalError < DlibraHttpError
+  end
    
 end
