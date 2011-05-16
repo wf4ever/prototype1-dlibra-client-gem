@@ -15,3 +15,4 @@ Changelog:
     0.0.3  Added .annotations on rdf graphs returned
     0.0.4  Updated rdf and annotations dependencies
     0.1.0  Modified to work with REST API v2
+    0.1.1  TBD
