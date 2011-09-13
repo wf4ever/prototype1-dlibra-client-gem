@@ -6,6 +6,6 @@ require 'dlibra_client'
 require 'uuidtools'
 
 # TODO: Move to config
-BASE="http://ivy.man.poznan.pl/rosrs2/"
+BASE="http://ivy.man.poznan.pl/rosrs3/"
 ADMIN="wfadmin"
 ADMIN_PW="wfadmin!!!"
