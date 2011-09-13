@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    dlibra_client (0.1.2)
+    dlibra_client (0.2.0)
       rdf (~> 0.3)
       rdf-rdfxml (~> 0.3)
 
@@ -22,7 +22,7 @@ GEM
       rspec-instafail (~> 0.1.4)
     gemcutter (0.7.0)
     json_pure (1.5.1)
-    nokogiri (1.4.4)
+    nokogiri (1.5.0)
     rdf (0.3.1)
       addressable (>= 2.2)
     rdf-rdfxml (0.3.2.1)
