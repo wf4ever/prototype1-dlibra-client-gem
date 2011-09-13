@@ -96,7 +96,7 @@ module DlibraClient
     end
 
     def manifest_rdf
-      resource_uri = URI.parse(uri.to_s + "/manifest.rdf")
+      resource_uri = URI.parse(uri.to_s)
       Net::HTTP.start(resource_uri.host, resource_uri.port) {|http|
         req = Net::HTTP::Get.new(resource_uri.path)
         req.basic_auth workspace.username, workspace.password
