@@ -63,8 +63,7 @@ module DlibraClient
     def upload_resource(ro_path, content_type, data)
       resource_uri = URI.parse(uri.to_s + "/") + ro_path
       Net::HTTP.start(resource_uri.host, resource_uri.port) {|http|
-      # FIXME: Why is this POST instead of PUT?
-        req = Net::HTTP::Post.new(resource_uri.path)
+        req = Net::HTTP::Put.new(resource_uri.path)
         req.basic_auth workspace.username, workspace.password
         req.content_type = content_type
         req.body = data
