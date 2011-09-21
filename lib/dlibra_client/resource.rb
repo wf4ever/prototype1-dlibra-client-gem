@@ -43,7 +43,7 @@ module DlibraClient
     def content=(value, type=content_type)
       resource_uri = uri
       Net::HTTP.start(resource_uri.host, resource_uri.port) do |http|
-        req = Net::HTTP::Post.new(resource_uri.path)
+        req = Net::HTTP::Put.new(resource_uri.path)
         req.basic_auth workspace.username, workspace.password
         req.content_type = type
         req.body = value
