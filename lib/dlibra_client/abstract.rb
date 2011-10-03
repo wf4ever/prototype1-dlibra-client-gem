@@ -38,7 +38,7 @@ module DlibraClient
     def uri
       return RDF::URI.new(@uri)
     end
-
+    
   end
 
 end

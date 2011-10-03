@@ -14,6 +14,10 @@ module DlibraClient
     attr_reader :workspace
     attr_reader :ro
     attr_reader :version
+    
+    alias :parent :version 
+
+    
     def initialize(workspace, ro, version, uri)
       @workspace = workspace
       @ro = ro
@@ -31,7 +35,7 @@ module DlibraClient
             raise RetrievalError.new(resource_uri, response)
           end
           if (! file)
-          return response.body
+            return response.body
           end
           response.read_body do |segment|
             file.write(segment)
@@ -39,6 +43,7 @@ module DlibraClient
         end
       end
     end
+    alias :download :content
 
     def content=(value, type=content_type)
       resource_uri = uri

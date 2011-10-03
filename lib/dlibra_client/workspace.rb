@@ -13,7 +13,7 @@ require 'dlibra_client/research_object'
 module DlibraClient
   # A connection to a Dlibra SRS Workspace
   class Workspace < Abstract
-
+    attr_reader :name
     attr_reader :base_uri
     attr_reader :username
     attr_reader :password
@@ -22,6 +22,7 @@ module DlibraClient
       @uri = URI.join(base_uri+"/", "workspaces/", workspace_id)
       @uri_slash = URI.join(base_uri+"/", "workspaces/", workspace_id+"/")
       @username = workspace_id
+      @name = workspace_id
       @password = password
       @workspace = self
     end

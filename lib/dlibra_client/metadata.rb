@@ -59,7 +59,7 @@ module DlibraClient
         req["Accept"] = APPLICATION_RDF_XML
         response = http.request(req)
         if response.is_a? Net::HTTPNotFound
-        return false
+          return false
         end
         #puts "Checking " + uri.to_s
         #puts response
@@ -69,6 +69,16 @@ module DlibraClient
         end
         return true
       end
+    end
+    
+    def name
+      parent_uri = @parent.uri.to_s
+      if not parent_uri.end_width? "/" do
+        # Evil hack
+        parent_uri += "/"
+      end
+      return URI.parse(parent_uri).route_to(self.uri.to_s)
+    end
     end
 
   end

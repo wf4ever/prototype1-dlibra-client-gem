@@ -12,6 +12,8 @@ require 'dlibra_client/version'
 module DlibraClient
   class ResearchObject < MetaData
     attr_reader :workspace
+    alias :parent :workspace 
+    
     def initialize(workspace, uri)
       @workspace = workspace
       @uri = uri

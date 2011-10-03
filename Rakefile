@@ -4,7 +4,7 @@ require 'echoe'
 require 'rspec/core/rake_task'
 
 
-Echoe.new('dlibra_client', '0.2.0') do |p|
+Echoe.new('dlibra_client', '0.2.1') do |p|
   p.description    = "Client library for the dLibra api of wf4ever Prototype 1 ROSRS"
   p.url            = "http://github.com/wf4ever/prototype1-dlibra-client-gem/"
   p.author         = "Stian Soiland-Reyes"

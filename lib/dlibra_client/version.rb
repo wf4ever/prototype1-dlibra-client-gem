@@ -17,6 +17,10 @@ module DlibraClient
   class Version < MetaData
     attr_reader :workspace
     attr_reader :ro
+    
+    alias :parent :ro 
+
+    
     def initialize(workspace, ro, uri)
       @workspace = workspace
       @ro = ro
