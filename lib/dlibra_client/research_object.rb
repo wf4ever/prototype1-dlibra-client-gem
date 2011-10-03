@@ -69,6 +69,19 @@ module DlibraClient
       }
     end
 
+    # Special case due to virtual /ROs/
+    def name
+      parent_uri = self.parent.uri.to_s
+      if not parent_uri.end_with?("/ROs/")
+        # Evil hack
+        parent_uri += "/ROs/"
+      end
+      puts parent_uri
+      puts self.uri.to_s
+      return URI.parse(parent_uri).route_to(self.uri.to_s).to_s
+    end
+
+
   end
 
 end

@@ -72,13 +72,12 @@ module DlibraClient
     end
     
     def name
-      parent_uri = @parent.uri.to_s
-      if not parent_uri.end_width? "/" do
+      parent_uri = self.parent.uri.to_s
+      if not parent_uri.end_with?("/")
         # Evil hack
         parent_uri += "/"
       end
-      return URI.parse(parent_uri).route_to(self.uri.to_s)
-    end
+      return URI.parse(parent_uri).route_to(self.uri.to_s).to_s
     end
 
   end

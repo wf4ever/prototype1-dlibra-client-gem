@@ -96,6 +96,11 @@ describe DlibraClient::Workspace do
           ro1.versions.should == []
         end
       end
+      describe "#name" do
+        it "should have the name 'ro1'" do
+            ro1.name.should == "ro1"
+        end
+      end
 
       describe "#metadata_rdf" do
         it "should contain some metadata" do
@@ -150,6 +155,11 @@ describe DlibraClient::Workspace do
         describe "#exists?" do
           it "should exist" do
             ver1.exists?.should == true
+          end
+        end
+        describe "#name" do
+          it "should have the name 'ver1'" do
+              ver1.name.should == "ver1"
           end
         end
 
@@ -270,6 +280,11 @@ describe DlibraClient::Workspace do
           describe "#exists?" do
             it "should exist" do
               f1.exists?.should == true
+            end
+          end
+          describe "#name" do
+            it "should have the name 'resource.txt'" do
+                f1.name.should == "resource.txt"
             end
           end
 
