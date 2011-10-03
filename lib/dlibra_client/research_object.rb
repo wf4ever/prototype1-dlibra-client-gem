@@ -76,8 +76,6 @@ module DlibraClient
         # Evil hack
         parent_uri += "/ROs/"
       end
-      puts parent_uri
-      puts self.uri.to_s
       return URI.parse(parent_uri).route_to(self.uri.to_s).to_s
     end
 
