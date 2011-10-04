@@ -382,8 +382,10 @@ describe DlibraClient::Workspace do
           describe "#delete" do
             it "should delete the resource" do
               ver1.resources.size.should == 1
+              ver1.manifest_rdf.should include("resource.txt") 
               f1.delete!
               ver1.resources.size.should == 0
+              ver1.manifest_rdf.should_not include("resource.txt")
             end
           end
         end
